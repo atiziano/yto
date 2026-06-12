@@ -1,0 +1,29 @@
+{
+  "name": "karaoke-offline",
+  "main": "index.html",
+  "single-instance": true,
+  "window": {
+    "frame": true,
+    "fullscreen": false,
+    "width": 1280,
+    "height": 720,
+    "resizable": true,
+    "min_width": 1024,
+    "min_height": 576,
+    "toolbar": true
+  },
+  "chromium-args": "--autoplay-policy=no-user-gesture-required",
+  "webview": {
+    "partitions": [
+      {
+        "name": "trusted",
+        "accessible_resources": [
+          "<all_urls>"
+        ]
+      }
+    ]
+  },
+  "dependencies": {
+    "yt-dlp-wrap": "^2.3.12"
+  }
+}

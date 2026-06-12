@@ -1,0 +1,384 @@
+/* ==========================================================================
+   1. RESET E VARIABILI GLOBALI (Cyber-Dark Theme)
+   ========================================================================== */
+:root {
+    --bg-main: #090d16;          /* Sfondo ultra-dark */
+    --bg-sidebar: #0f172a;       /* Sfondo barra laterale */
+    --bg-panel: #1e293b;         /* Sfondo pannelli mixer/effetti */
+    --bg-search: #d0eb36;        /* Giallo evidenziatore ricerca */
+    --accent: #8b5cf6;           /* Viola primario neon */
+    --accent-hover: #a78bfa;     /* Viola chiaro per hover */
+    --success: #10b981;          /* Verde smeraldo attivo */
+    --danger: #ef4444;           /* Rosso alert */
+    --text-main: #f8fafc;        /* Testo principale bianco */
+    --text-muted: #94a3b8;       /* Testo secondario grigio */
+    --text-search: #0d0e0b;      /* Testo scuro per evidenziare i risultati di ricerca */
+    --border-color: #334155;     /* Bordi tech */
+    --radius: 12px;              /* Arrotondamento moderno */
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   2. SIDEBAR E CONTENITORI
+   ========================================================================== */
+#sidebar {
+    width: 320px;
+    min-width: 320px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+#search-container {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 100%);
+}
+
+.search-row {
+    display: flex;
+    gap: 8px;              /* Spazio orizzontale tra la cartella e l'input */
+    margin-top: 12px;
+    margin-bottom: 8px;
+    width: 100%;
+    align-items: center;   /* Allinea verticalmente al centro la cartella e il cerca */
+}
+
+/* Stile protetto e dedicato per l'evidenziatore della ricerca */
+.search-match {
+    background-color: var(--bg-search) !important;
+    color: var(--text-search) !important;
+}
+
+/* La barra di ricerca ora occupa tutto lo spazio rimanente a destra della cartella */
+#myInput {
+    flex-grow: 1;
+    width: 100%;
+    height: 40px;            /* Stessa altezza del pulsante cartella */
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0 14px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#myInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Lista Canzoni (Scrollabile e stilizzata) */
+#myUL {
+    list-style: none;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 15px;
+}
+
+/* Stile per ogni elemento della lista */
+#myUL li {
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    display: block;
+    align-items: center;
+    transition: all 0.2s ease-in-out !important;
+}
+
+#myUL li:hover {
+    background-color: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateX(2px);
+}
+
+/* Sfrutta le variabili root per tenere la canzone corrente illuminata nel tempo */
+#myUL li.active,
+#myUL li.selected {
+    background-color: rgba(139, 92, 246, 0.2) !important; /* Trasparenza sul viola accent */
+    border-left: 4px solid var(--accent) !important;       /* Linea verticale viola neon */
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    font-weight: bold !important;
+    transform: translateX(4px) !important;                  /* Slitta a destra di 4px */
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important; /* Bagliore cyberpunk */
+}
+
+.panel-scroll {
+    max-height: 35vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+#myUL::-webkit-scrollbar,
+.panel-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+#myUL::-webkit-scrollbar-thumb,
+.panel-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+#myUL::-webkit-scrollbar-thumb:hover,
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   3. PULSANTI E COMPONENTI INTERFACCIA
+   ========================================================================== */
+.btn-fx {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    padding:8px 5px;
+    font-size:11px;
+    flex:1;
+    border: 1px solid transparent !important;
+    box-sizing: border-box;
+}
+
+.btn-fx.active {
+    border-color: var(--accent) !important;
+}
+
+.btn-fx:not(.active) {
+    border-color: var(--border-color) !important;
+}
+
+.btn-fx:hover:not([disabled]) {
+    background-color: rgba(255,255,255,0.05);
+    border-color: var(--text-muted);
+}
+
+/* Stati speciali pulsanti Filler */
+.btn-filler-active-play {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    animation: pulseGlow 2s infinite;
+}
+
+.btn-filler-active-stop {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border-color: var(--danger) !important;
+    color: var(--danger) !important;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+    50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+}
+
+/* Sezioni in fondo alla barra laterale */
+#filler-controls, #button-playing {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: rgba(15, 23, 42, 0.9);
+}
+
+#button-playing {
+    padding-bottom: 25px; /* Spazio extra in fondo */
+}
+
+#button-playing .btn-fx {
+    flex: 1;
+}
+
+/* Badge cantanti */
+#singer-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 20px;
+    border: 2px solid var(--bg-sidebar);
+}
+
+/* ==========================================================================
+   4. PANNELLI FLUTTUANTI (Mixer, Effetti, Cantanti)
+   ========================================================================== */
+#mixer-panel, #pitch-panel, #singer-panel {
+    display: none; /* Gestito da JS */
+    position: absolute;
+    
+    /* Agganciamo il pannello sopra la sezione dei controlli in basso */
+    bottom: 165px; 
+    left: 15px;
+    
+    /* Calcoliamo la larghezza esatta sottraendo i margini laterali (15px a sinistra + 15px a destra) */
+    width: calc(100% - 30px); 
+    
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 15px;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-panel {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    font-size: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-panel:hover { color: var(--danger); }
+
+.control-group {
+    margin-bottom: 11px;
+}
+
+.control-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+    font-weight: 500;
+}
+
+.val-display {
+    color: var(--accent-hover);
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Personalizzazione Slider Hardware-Style */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--bg-main);
+    border-radius: 5px;
+    outline: none;
+    transition: background 0.3s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--text-main);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: var(--accent-hover);
+    transform: scale(1.2);
+}
+
+/* Lista dei cantanti all'interno del pannello */
+#singerList li {
+    position: relative;
+    z-index: 2; /* LE RIGHE REALI STANNO SOPRA */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    margin-bottom: 5px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* ==========================================================================
+   5. ZONA CINEMA PLAYER (Destra)
+   ========================================================================== */
+#player-zone {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-main);      /* Sfondo coerente con il tema */
+    border-radius: var(--radius);    /* Arrotondamento moderno */
+    box-shadow: var(--shadow);       /* Ombra neon tech */
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* Video Player */
+#vid {
+    width: 100%;
+    max-width: 98vw;
+    height: 100%;
+    max-height: 98vh;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    outline: none;
+    object-fit: contain;   /* Mantiene proporzioni perfette */
+}
+
+
+/* Nascondiamo il player audio filler di fondo */
+#fillerPlayer {
+    display: none;
+}
