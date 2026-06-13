@@ -47,19 +47,57 @@ function loadExternalFiles(input) {
 
 /**
  * Filtra la lista dei video in base al testo inserito nell'input di ricerca
+ * Supporta parole non consecutive ed evidenzia i match senza rompere il DOM
  */
 function filter() {
-    const val = document.getElementById('myInput').value.toUpperCase();
+    const inputVal = document.getElementById('myInput').value.trim();
+    const valUpper = inputVal.toUpperCase();
+    
+    // Spezza l'input in singole parole ignorando gli spazi multipli
+    const paroleCercate = valUpper.split(/\s+/).filter(p => p.length > 0);
+    
     const li = document.getElementById('myUL').getElementsByTagName('li');
+
     for (let i = 0; i < li.length; i++) {
-        const txt = li[i].getAttribute('data-name') || '';
-        if (txt.toUpperCase().indexOf(val) > -1) {
-            li[i].style.display = "";
-            const regex = new RegExp("(" + val + ")", "gi");
-            li[i].innerHTML = val.length > 0 ? txt.replace(regex, "<span class='search-match'>$1</span>") : txt;            
-        } else { li[i].style.display = "none"; }
+        const item = li[i];
+        const txt = item.getAttribute('data-name') || '';
+        const txtUpper = txt.toUpperCase();
+
+        // Verifichiamo se TUTTE le parole cercate sono contenute nel titolo (anche non consecutive)
+        const matchTrovato = paroleCercate.every(parola => txtUpper.indexOf(parola) > -1);
+
+        if (matchTrovato || paroleCercate.length === 0) {
+            item.style.display = "";
+
+            // Trova lo span interno del titolo per non distruggere il wrapper flex
+            const spanTitolo = item.querySelector('span');
+            if (spanTitolo) {
+                if (paroleCercate.length > 0) {
+                    // Crea una regex che intercetta tutte le parole cercate separate da un "or" (|)
+                    // Es: (parola1|parola2)
+                    const pattern = paroleCercate.map(p => escapeRegExp(p)).join('|');
+                    const regex = new RegExp(`(${pattern})`, "gi");
+                    
+                    // Evidenzia i match sul testo puro del titolo
+                    spanTitolo.innerHTML = txt.replace(regex, "<span class='search-match'>$1</span>");
+                } else {
+                    // Se l'input è vuoto, ripristina il testo originale pulito
+                    spanTitolo.innerText = txt;
+                }
+            }
+        } else {
+            item.style.display = "none";
+        }
     }
-    updateStat();
+    
+    if (typeof updateStat === 'function') updateStat();
+}
+
+/**
+ * Funzione di utilità per evitare che caratteri speciali nella ricerca (es. ?, +, -) rompano la Regex
+ */
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**

@@ -175,3 +175,65 @@ window.toggleModaleAttesa = function(mostra) {
         }
     }
 };
+
+/**
+ * Popola la lista principale #myUL con i risultati ottenuti da YouTube
+ * Mantiene la stessa identica struttura DOM dei file locali per coerenza visiva e logica
+ * @param {Array} risultati - Array di oggetti video restituiti da yt-dlp
+ */
+function aggiornaInterfacciaRicerca(risultati) {
+    const ul = document.getElementById('myUL');
+    if (!ul) {
+        console.error("❌ Impossibile trovare la lista #myUL nel DOM.");
+        return;
+    }
+
+    // Svuota la lista (proprio come fai per i file locali)
+    ul.innerHTML = '';
+
+    if (!risultati || risultati.length === 0) {
+        alert("Nessun risultato trovato su YouTube!");
+        return;
+    }
+
+    // Ciclo sui 5 risultati di YouTube
+    risultati.forEach(video => {
+        const videoId = video.id;
+        const titoloTesto = video.title;
+
+        // Creiamo il tag <li> coerente
+        const li = document.createElement('li');
+        li.setAttribute('data-name', titoloTesto);
+        
+        // Al click, ricostruiamo l'URL completo usando l'ID e lo passiamo alla tua funzione principale
+        li.onclick = function () { 
+            const urlCompleto = `https://www.youtube.com/watch?v=${videoId}`;
+            
+            if (typeof window.caricaVideoYouTubeNelTagLocale === 'function') {
+                console.log(`🚀 [UI] Click su traccia YouTube. Avvio streaming per: ${urlCompleto}`);
+                window.caricaVideoYouTubeNelTagLocale(urlCompleto); 
+            } else {
+                console.error("❌ Funzione caricaVideoYouTubeNelTagLocale non trovata.");
+            }
+        };
+
+        // Struttura Flex identica alla tua locale
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        wrapper.style.justifyContent = "space-between";
+
+        // Titolo della canzone (con un piccolo tag [YT] per distinguerlo se vuoi, o lascialo puro)
+        const titolo = document.createElement("span");
+        titolo.innerText = `🔴 [YT] ${titoloTesto}`; // Il prefisso aiuta a capire che è in streaming
+
+        // Assemblaggio del DOM
+        wrapper.appendChild(titolo);
+        li.appendChild(wrapper);
+        ul.appendChild(li);
+    });
+
+    // Eseguiamo le tue funzioni di aggiornamento statistiche e filtri native
+    if (typeof updateStat === 'function') updateStat();
+    if (typeof filter === 'function') filter();
+}

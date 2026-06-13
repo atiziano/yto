@@ -185,20 +185,27 @@ function avviaDownloadDalForm() {
 window.avviaDownloadDalForm = avviaDownloadDalForm;
 
 // ====================================================================================
-// FUNZIONE DI STREAMING DIRETTO STRUTTURATA CON EXECPROMISE (SOLUZIONE STDOUT)
+// FUNZIONE DI STREAMING DIRETTO STRUTTURATA (VERSIONE AGGIORNATA IBRIDA)
 // ====================================================================================
-function caricaVideoYouTubeNelTagLocale() {
+function caricaVideoYouTubeNelTagLocale(urlDirettoDaRicerca = null) {
     
-    // 1. Recupero dell'URL dal form
+    let urlVideo = "";
     let inputDownload = document.getElementById('url-download');
-    let urlVideo = inputDownload ? inputDownload.value.trim() : "";
+
+    // 1. Controllo intelligente: se abbiamo passato l'url direttamente lo usiamo,
+    // altrimenti andiamo a leggerlo dal form HTML
+    if (urlDirettoDaRicerca) {
+        urlVideo = urlDirettoDaRicerca.trim();
+    } else if (inputDownload) {
+        urlVideo = inputDownload.value.trim();
+    }
 
     // Pulizia dell'URL per isolare l'ID video
     if (urlVideo.includes('&')) {
         urlVideo = urlVideo.split('&')[0];
     }
 
-    if (!urlVideo || !urlVideo.includes('watch?v=')) {
+    if (!urlVideo || (!urlVideo.includes('watch?v=') && !urlVideo.includes('youtu.be') && urlVideo.length < 11)) {
         alert("Per favore, seleziona prima un video valido su YouTube!");
         return;
     }
@@ -379,3 +386,57 @@ addEventListener('contentload', function gestisciPaginaYouTube() {
         // console.warn("executeScript error");
     });
 });    
+
+/**
+ * Esegue la ricerca su YouTube tramite yt-dlp e passa i risultati alla UI
+ * @param {string} query - Testo da cercare (es. "Karaoke Battisti")
+ */
+function cercaSuYouTubeNW(query) {
+    if (!query) return;
+
+    // Calcola il percorso dinamico basato sulla posizione dell'app (perfetto per chiavetta USB)
+    // Punta a: resources/bin/yt/yt-dlp.exe
+    const percorsoYtdlp = path.join(process.cwd(), 'bin', 'yt', 'yt-dlp.exe');
+    
+    // Comando: cerca 5 elementi, sputa in JSON pulito, non scaricare playlist intere
+    const comando = `"${percorsoYtdlp}" "ytsearch5:${query}" --dump-json --flat-playlist`;
+
+    console.log(`🔍 [NW.js] Avvio ricerca in background per: "${query}"`);
+    
+    // Mostra un caricamento nella UI
+    if (window.parent && typeof window.parent.toggleModaleAttesa === 'function') {
+        window.parent.toggleModaleAttesa(true);
+    }               
+
+
+    exec(comando, (error, stdout, stderr) => {
+        // Chiude Dialog
+        if (window.parent && typeof window.parent.toggleModaleAttesa === 'function') {
+            window.parent.toggleModaleAttesa(false);
+        }               
+
+        if (error) {
+            console.error("❌ Errore durante l'esecuzione di yt-dlp:", error);
+            alert("Errore di rete o yt-dlp non trovato. Controlla la console.");
+            return;
+        }
+
+        try {
+            // yt-dlp restituisce una riga JSON per ogni video trovato
+            const linee = stdout.trim().split('\n');
+            
+            // Filtra le righe vuote e converti ogni riga in un oggetto JS
+            const risultati = linee
+                .filter(linea => linea.trim() !== '')
+                .map(linea => JSON.parse(linea));
+
+            console.log("✅ [NW.js] Risultati grezzi ricevuti:", risultati);
+
+            // Manda i dati puliti alla funzione che disegna la UI
+            aggiornaInterfacciaRicerca(risultati);
+
+        } catch (e) {
+            console.error("❌ Errore nel parsing dei dati di YouTube:", e);
+        }
+    });
+}
