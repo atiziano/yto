@@ -9,12 +9,8 @@
  */
 async function play(fileUrl, el) {
 
-    // Si sposta sul video
-    const riquadroPlayer = document.getElementById('riquadro-player-cyber');
-    if (riquadroPlayer) {
-        riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
+    mostraPlayer();
+    
     const videoPlayer = document.getElementById('vid');
     const placeholder = document.getElementById('player-placeholder');
     const btnPlay = document.getElementById('btn-filler-play');

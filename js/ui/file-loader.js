@@ -238,8 +238,8 @@ async function eseguiCodaDownloadCopertine(cartella, listaTracce) {
 }
 
 /**
- * Filtra la lista dei video in base al testo inserito nell'input di ricerca
- * Supporta parole non consecutive ed evidenzia i match senza rompere il DOM
+ * Filtra la lista dei video leggendo direttamente dal DOM (data-name)
+ * Ripristina il comportamento originale sicuro per il caricamento delle cartelle
  */
 function filter() {
     const inputVal = document.getElementById('myInput').value.trim();
@@ -253,7 +253,7 @@ function filter() {
     for (let i = 0; i < li.length; i++) {
         const item = li[i];
         
-        // Recuperiamo il nome ed eliminiamo l'estensione se presente, per un filtro pulito
+        // Recuperiamo il nome originale ed eliminiamo l'estensione per il filtro pulito
         let txt = item.getAttribute('data-name') || '';
         txt = txt.replace(/\.mp4$/i, ''); 
         
@@ -265,7 +265,7 @@ function filter() {
         if (matchTrovato || paroleCercate.length === 0) {
             item.style.display = "";
 
-            // 🎯 CORREZIONE: Cerchiamo 'h4' che è il tag reale usato nelle nuove card grandi
+            // Cerchiamo 'h4' che è il tag reale usato nelle card grandi
             const h4Titolo = item.querySelector('h4');
             if (h4Titolo) {
                 if (paroleCercate.length > 0) {
@@ -274,10 +274,10 @@ function filter() {
                     const regex = new RegExp(`(${pattern})`, "gi");
                     
                     // Evidenzia i match sul testo del titolo h4
-                    h4Titolo.innerHTML = txt.replace(regex, "<span class='search-match'>$1</span>");
+                    h4Titolo.innerHTML = txtPulito.replace(regex, "<span class='search-match'>$1</span>");
                 } else {
-                    // Se l'input è vuoto, ripristina il testo originale pulito senza tag di evidenziazione
-                    h4Titolo.innerText = txt;
+                    // Se l'input è vuoto, ripristina il testo originale pulito senza tag
+                    h4Titolo.innerText = txtPulito;
                 }
             }
         } else {

@@ -203,6 +203,17 @@ function mostraInGriglia(arrayBasi) {
 window.mostraInGriglia = mostraInGriglia;
 
 /**
+ * Posizionamento sul player
+ */
+window.mostraPlayer = function() {
+    // Si sposta sul video
+    const riquadroPlayer = document.getElementById('riquadro-player-cyber');
+    if (riquadroPlayer) {
+        riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
  * Gestisce la visibilità della modale di caricamento.
  * @param {boolean} mostra - true per aprire la modale, false per chiuderla.
  */

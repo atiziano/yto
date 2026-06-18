@@ -21,26 +21,29 @@
         
         <div class="top-center">
             <div class="search-box-wrapper">
-                <input type="text" id="myInput" onkeyup="filter()" placeholder="Cerca..." autofocus>
-                <button class="search-btn" title="Cerca su YouTube" 
-                        onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">
-                    🔍
-                </button>
+                <input type="text" id="myInput" onkeyup="filter()" placeholder="Cerca in locale o su YouTube..." autofocus>
                 <select id="quantita-risultati" class="search-select" title="Numero di risultati">
                     <option value="5" selected>5 risultati (Veloce)</option>
                     <option value="10">10 risultati (Normale)</option>
                     <option value="25">25 risultati (Approfondita)</option>
                     <option value="50">50 risultati (Massima)</option>
                 </select>
+                <button class="search-btn" title="Cerca su YouTube" 
+                        onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">
+                    🔍
+                </button>
             </div>
         </div>
 
-        <div class="top-right" style="position: relative;"> <label class="upload-btn" title="Carica Intera Cartella">
-                📁 Carica Cartella
-                <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
-            </label>
+        <div class="top-right" style="position: relative;">
+            
             <div class="filler-row">
-                <button class="mini-btn" id="btn-console" onclick="apriConsoleWebview()" title="Apre la console (Click destro per Manutenzione)">🛠️</button>
+                <label class="upload-btn" title="Carica Intera Cartella">
+                    📁
+                    <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
+                </label>
+                <button class="mini-btn" title="Mostra player" onclick="mostraPlayer()">📺</button>
+                <button class="mini-btn" id="btn-console" title="Apre la console (Click destro per Manutenzione)" onclick="apriConsoleWebview()">🛠️</button>
             </div>
 
             <div id="menu-manutenzione-segreto" class="dropdown-menu-segreto">
