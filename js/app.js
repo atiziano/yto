@@ -38,9 +38,31 @@ function initApp() {
     window.yto.players.video = document.getElementById('vid');
     window.yto.players.sound = document.getElementById('suono');
 
-    // Carica la cartella predefinita all'avvio
+    // 1. Carica la cartella predefinita standard all'avvio
     const percorsoSongs = path.join(process.cwd(), 'songs');
     caricaCartellaLocale(percorsoSongs);    
+
+    // ==========================================================================
+    // 💾 2. RIPRISTINO AUTOMATICO CARTELLE APERTE PRECEDENTEMENTE (LocalStorage)
+    // ==========================================================================
+    const cartelleSalvate = localStorage.getItem('yto_cartelle_locali');
+    if (cartelleSalvate) {
+        try {
+            const percorsi = JSON.parse(cartelleSalvate);
+            if (Array.isArray(percorsi) && percorsi.length > 0) {
+                console.log(`🔄 [Storage] Ripristino di ${percorsi.length} cartelle salvate...`);
+                percorsi.forEach(percorso => {
+                    // Evitiamo di scansionare due volte la cartella 'songs' predefinita se è già lì
+                    if (percorso !== percorsoSongs) {
+                        caricaCartellaLocale(percorso);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("❌ [Storage] Errore nel caricamento delle cartelle salvate:", e);
+        }
+    }
+    // ==========================================================================
 
     // Inizializza tutti i controlli audio basandoti sulla nuova posizione di controlli
     if (window.yto.ui.controlli) {

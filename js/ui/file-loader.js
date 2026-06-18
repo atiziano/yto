@@ -13,6 +13,27 @@ function caricaCartellaLocale(percorsoAssoluto) {
 
     console.log("📂 [Core-Loader] Scansione cartella in corso:", percorsoAssoluto);
 
+    // ==========================================================================
+    // 🚀 LOGICA DI MEMORIZZAZIONE DIFENSIVA DELLE CARTELLE
+    // ==========================================================================
+    try {
+        // 1. Recupera la stringa dal localStorage, se non esiste parte con un array vuoto "[]"
+        const cartelleSalvateRaw = localStorage.getItem('yto_cartelle_locali') || "[]";
+        let listaCartelle = JSON.parse(cartelleSalvateRaw);
+
+        // 2. Aggiunge il percorso corrente alla lista solo se non è già presente
+        if (!listaCartelle.includes(percorsoAssoluto)) {
+            listaCartelle.push(percorsoAssoluto);
+            
+            // 3. Risalva l'array aggiornato nel localStorage convertito in stringa
+            localStorage.setItem('yto_cartelle_locali', JSON.stringify(listaCartelle));
+            console.log("💾 [Storage] Percorso cartella memorizzato con successo:", percorsoAssoluto);
+        }
+    } catch (e) {
+        console.error("❌ [Storage] Impossibile salvare la cartella nel localStorage:", e);
+    }
+    // ==========================================================================
+
     fs.readdir(percorsoAssoluto, (err, files) => {
         if (err) {
             console.error("❌ Errore nella lettura della cartella:", err);
