@@ -4,8 +4,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Avvia Karaoke NW.js",
-            "runtimeExecutable": "D:\\karaokepro\\bin\\nw\\nw.exe",
+            "name": "Avvia YTO su NW.js",
+            "runtimeExecutable": "${workspaceFolder}\\bin\\nw\\nw.exe",
             "runtimeArgs": [
                 "${workspaceRoot}"
             ],

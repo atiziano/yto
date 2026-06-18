@@ -612,3 +612,34 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 .panel-scroll::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/* Stile del menu a tendina segreto */
+.dropdown-menu-segreto {
+    display: none; /* Parte nascosto */
+    position: absolute;
+    top: 40px;     /* Lo spinge esattamente sotto la barra dei pulsanti */
+    right: 0;      /* Lo allinea perfettamente al bordo destro dello schermo */
+    background-color: #1e222b; /* Grigio scuro coerente con l'app */
+    border: 1px solid #3f4452;
+    border-radius: 6px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+/* Stile delle singole voci del menu */
+.dropdown-menu-segreto .menu-item {
+    padding: 10px 14px;
+    color: #e3e3e3;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+/* Effetto Hover sulle voci */
+.dropdown-menu-segreto .menu-item:hover {
+    background-color: #2c313c;
+    color: #ffffff;
+}

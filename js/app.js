@@ -1,6 +1,8 @@
 ﻿// Usiamo i moduli nativi di Node.js
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const gui = require('nw.gui');
 const { exec } = require('child_process');
 
 // ==========================================================================
@@ -30,6 +32,9 @@ window.yto = {
  */
 function initApp() {
     console.log("🚀 [Core] Inizializzazione sistema Karaoke (Oggetto Unico)...");
+    
+    // Ti mostra il percorso esatto dell'eseguibile che sta girando in questo momento
+    console.log("📍 NW.js sta girando da qui:", process.execPath);
     
     // Forza la massimizzazione immediata tramite le API native di NW.js
     nw.Window.get().maximize();
@@ -120,6 +125,25 @@ function initApp() {
         });
     }
 
+    // 🎯 LOGICA PER IL MENU SEGRETO DI MANUTENZIONE
+    const btnConsole = document.getElementById("btn-console");
+    const menuSegreto = document.getElementById("menu-manutenzione-segreto");
+
+    if (btnConsole && menuSegreto) {
+        // Cattura il CLICK DESTRO sul tasto 🛠️
+        btnConsole.addEventListener("contextmenu", (e) => {
+            e.preventDefault(); // Blocca il menu predefinito di Windows
+            menuSegreto.style.display = "block"; // Mostra la tendina
+        });
+    }
+
+    // Chiude il menu se l'utente clicca in un qualsiasi altro punto dello schermo
+    document.addEventListener("click", (e) => {
+        if (menuSegreto && btnConsole && !btnConsole.contains(e.target) && !menuSegreto.contains(e.target)) {
+            menuSegreto.style.display = "none";
+        }
+    });
+    
     console.log("✅ [Core] Sistema Pronto! Struttura window.yto attiva.");
 }
 
@@ -196,6 +220,186 @@ window.toggleModaleAttesa = function(mostra) {
         }
     }
 };
+
+/**
+ * Aggiorna il binario di yt-dlp usando il wrapper ytDlpWrap
+ */
+function aggiornaYtdlp() {
+    console.log("⚡ [Updater] Avvio controllo aggiornamenti per yt-dlp...");
+    
+    if (!ytDlpWrap) {
+        console.error("❌ [Download] Motore yt-dlp non pronto.");
+        return;
+    }
+
+    if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(true);
+
+    const argomentiUpdate = ['--update-to', 'stable'];
+    let giaAggiornato = false;
+
+    // 1. Avviamo l'esecuzione memorizzando l'istanza del processo restituito dal wrapper
+    const promessaUpdate = ytDlpWrap.exec(argomentiUpdate);
+
+    // 2. 🎯 Intercettiamo l'output testuale direttamente dallo stream stdout del processo nativo
+    if (promessaUpdate.ytDlpProcess && promessaUpdate.ytDlpProcess.stdout) {
+        promessaUpdate.ytDlpProcess.stdout.on('data', (data) => {
+            const rigaTesto = data.toString();
+            console.log(`📄 [yt-dlp Output]: ${rigaTesto}`); // Sostituisce il vecchio console.log fasullo
+
+            if (rigaTesto.includes("is up to date") || rigaTesto.includes("already installed")) {
+                giaAggiornato = true;
+            }
+        });
+    }
+
+    // 3. Gestione degli eventi standard del wrapper (che rimangono identici)
+    promessaUpdate
+    .on('progress', (progress) => {
+        console.log(`📥 Scaricamento nuovo binario: ${progress.percent}%`);
+    })
+    .on('error', (err) => {
+        console.error(`❌ [Updater] Errore durante l'aggiornamento:`, err);
+        if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+
+        if (err.message.includes("403") || err.message.includes("rate limit")) {
+            alert("GitHub ha bloccato la richiesta (Errore 403 Rate Limit).\nRiprova più tardi.");
+        } else {
+            alert(`Errore durante l'aggiornamento: ${err.message}`);
+        }
+    })
+    .on('close', () => {
+        console.log("🚀 [Updater] Processo di aggiornamento terminato.");
+        if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+        
+        if (giaAggiornato) {
+            alert("Il motore yt-dlp è già aggiornato all'ultima versione disponibile! ✅");
+        } else {
+            alert("Il motore yt-dlp è stato aggiornato con successo all'ultima versione! 🎉");
+        }
+    });
+}
+
+/**
+ * Reindirizza l'utente alla pagina di download o a GitHub per NW.js
+ */
+async function aggiornaCoreNWJS() {
+    
+    console.log("🌐 [Updater App] Avvio controllo e aggiornamento automatico NW.js...");
+    
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+    if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(true);
+    
+    try {
+        const risposta = await fetch('https://nwjs.io/versions.json');
+        if (!risposta.ok) throw new Error(`Errore server NW.js: ${risposta.status}`);
+        
+        const dati = await risposta.json();
+        let ultimaVersioneTag = dati.stable; // es: "v0.111.0"
+        let ultimaVersionePura = ultimaVersioneTag.replace('v', '');
+        let versioneAttuale = process.versions.nw; // potrebbe essere "0.111" o "0.111.0"
+
+        // 🎯 NORMALIZZAZIONE: Assicuriamoci che entrambe abbiano il formato X.Y.Z
+        if (versioneAttuale.split('.').length === 2) versioneAttuale += '.0';
+        if (ultimaVersionePura.split('.').length === 2) ultimaVersionePura += '.0';
+
+        console.log(`🔍 Confronto normalizzato -> Locale: ${versioneAttuale} | Server: ${ultimaVersionePura}`);
+        
+        if (versioneAttuale === ultimaVersionePura) {
+            if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+            alert(`NW.js è già aggiornato all'ultima versione stabile (${process.versions.nw})! ✅`);
+            return;
+        }
+
+        const messaggio = `È disponibile una nuova versione di NW.js!\n\n` +
+                        `• Versione installata: ${versioneAttuale}\n` +
+                        `• Nuova versione stabile: ${ultimaVersionePura}\n\n` +
+                        `Vuoi scaricare direttamente il pacchetto ZIP aggiornato (SDK)?`;
+        
+        if (!confirm(messaggio)) {
+            if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+            console.log("❌ Download bloccato dall'utente");
+            return;
+        }
+
+        // 🎯 Componiamo l'URL. Uso "nwjs-sdk" perché abbiamo visto che ti servono i DevTools!
+        const urlZip = `https://dl.nwjs.io/${ultimaVersioneTag}/nwjs-sdk-${ultimaVersioneTag}-win-x64.zip`;
+        
+        const cartellaBin = path.join(process.cwd(), 'bin');
+        const zipDestinazione = path.join(cartellaBin, 'nw_aggiornamento.zip');
+        const cartellaTemporaneaEstrazione = path.join(cartellaBin, 'nw_nuovo_temp');
+
+        console.log("📥 Scaricamento dello ZIP di aggiornamento...");
+        
+        // 1. Scarichiamo lo ZIP in background aggirando i blocchi
+        downloadFileDiretto(urlZip, zipDestinazione, (successo, erroreDownload) => {
+            if (!successo) {
+                if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+                alert(`Errore nel download dello ZIP: ${erroreDownload}`);
+                return;
+            }
+
+            console.log("📦 Download completato. Estrazione dello ZIP via PowerShell nativa...");
+
+            // 2. Estraiamo lo ZIP usando PowerShell (nativo in Windows, zero librerie npm)
+            const comandoEstrazione = `powershell -Command "Expand-Archive -Path '${zipDestinazione}' -DestinationPath '${cartellaTemporaneaEstrazione}' -Force"`;
+            
+            exec(comandoEstrazione, (errExtract) => {
+                // Rimuoviamo subito lo ZIP per non lasciare sporcizia
+                if (fs.existsSync(zipDestinazione)) fs.unlinkSync(zipDestinazione);
+
+                if (errExtract) {
+                    if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+                    console.error("❌ Errore estrazione:", errExtract);
+                    alert("Errore durante l'estrazione dei file di aggiornamento.");
+                    return;
+                }
+
+                // 3. Prepariamo lo script Batch di sgancio
+                // Nota: NW.js quando viene estratto crea una sottocartella (es: bin/nw_nuovo_temp/nwjs-sdk-v0.111.0-win-x64/)
+                const sottocartelle = fs.readdirSync(cartellaTemporaneaEstrazione);
+                const cartellaContenutoEstratto = path.join(cartellaTemporaneaEstrazione, sottocartelle[0]);
+
+                const percorsoScriptBat = path.join(process.cwd(), 'aggiorna_nw.bat');
+                const cartellaNwAttuale = path.join(cartellaBin, 'nw');
+
+                // Questo script aspetta che NW.js si chiuda, cancella la vecchia cartella, sposta la nuova e riavvia l'app
+                const contenutoBat = 
+`@echo off
+timeout /t 2 /nobreak > nul
+echo 🔄 Aggiornamento in corso... Non chiudere questa finestra.
+rmdir /s /q "${cartellaNwAttuale}"
+move /y "${cartellaContenutoEstratto}" "${cartellaNwAttuale}"
+rmdir /s /q "${cartellaTemporaneaEstrazione}"
+echo 🎉 Aggiornamento completato con successo! Riavvio...
+start "" "${path.join(cartellaNwAttuale, 'nw.exe')}" "${process.cwd()}"
+del "%~f0"
+`;
+
+                fs.writeFileSync(percorsoScriptBat, contenutoBat, 'utf-8');
+
+                if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+                
+                alert("L'applicazione verrà chiusa per completare l'aggiornamento del core alla versione " + ultimaVersionePura + ". Si riavvierà da sola tra pochi secondi! 🚀");
+
+                // 4. Lanciamo il file batch in modo distaccato ed usciamo immediatamente!
+                const { spawn } = require('child_process');
+                spawn('cmd.exe', ['/c', percorsoScriptBat], {
+                    detached: true,
+                    stdio: 'ignore'
+                }).unref();
+
+                // Chiude l'applicazione NW.js all'istante sbloccando i file .exe e .dll
+                gui.App.quit();
+            });
+        });
+
+    } catch (e) {
+        if (typeof toggleModaleAttesa === "function") toggleModaleAttesa(false);
+        console.error("❌ Errore updater core:", e);
+        alert("Impossibile completare l'operazione.");
+    }
+}
 
 // Avvio rapido non appena la struttura del DOM è pronta
 document.addEventListener("DOMContentLoaded", initApp);

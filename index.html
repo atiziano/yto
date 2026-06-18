@@ -35,15 +35,20 @@
             </div>
         </div>
 
-        <div class="top-right">
-            <label class="upload-btn" title="Carica Intera Cartella">
+        <div class="top-right" style="position: relative;"> <label class="upload-btn" title="Carica Intera Cartella">
                 📁 Carica Cartella
                 <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
             </label>
             <div class="filler-row">
-                <button class="mini-btn" onclick="apriConsoleWebview()" title="Console">🛠️</button>
+                <button class="mini-btn" id="btn-console" onclick="apriConsoleWebview()" title="Apre la console (Click destro per Manutenzione)">🛠️</button>
+            </div>
+
+            <div id="menu-manutenzione-segreto" class="dropdown-menu-segreto">
+                <div class="menu-item" onclick="aggiornaYtdlp()">🔄 Aggiorna YT-DLP</div>
+                <div class="menu-item" onclick="aggiornaCoreNWJS()">🚀 Aggiorna NW.js</div>
             </div>
         </div>
+        
     </header>
 
     <div id="main-layout-container">
@@ -82,7 +87,6 @@
                         <button id="btn-filler-stop" class="mini-btn" onclick="controlFiller('stop')">⏹</button>
                     </div>
                 </div>
-
             </div>
         </aside>
 

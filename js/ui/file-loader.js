@@ -289,6 +289,47 @@ function filter() {
 }
 
 /**
+ * Funzione di supporto per scaricare file aggirando i limiti API di GitHub
+ */
+window.downloadFileDiretto = function (url, destinazione, callback) {
+
+    const file = fs.createWriteStream(destinazione);
+    
+    const getRequest = (targetUrl) => {
+        // 🎯 Aggiunto 'rejectUnauthorized: false' nelle opzioni di https
+        const opzioni = { 
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+            rejectUnauthorized: false 
+        };
+
+        https.get(targetUrl, opzioni, (response) => {
+            if (response.statusCode === 302 || response.statusCode === 301) {
+                getRequest(response.headers.location);
+                return;
+            }
+
+            if (response.statusCode !== 200) {
+                file.close();
+                callback(false, `Server risponde con codice: ${response.statusCode}`);
+                return;
+            }
+
+            response.pipe(file);
+
+            file.on('finish', () => {
+                file.close(() => callback(true, null));
+            });
+        }).on('error', (err) => {
+            fs.unlink(destinazione, () => {}); 
+            file.close();
+            callback(false, err.message);
+        });
+    };
+
+    getRequest(url);
+}
+
+/**
  * Funzione di utilità per evitare che caratteri speciali nella ricerca (es. ?, +, -) rompano la Regex
  */
 function escapeRegExp(string) {
