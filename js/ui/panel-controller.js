@@ -121,132 +121,54 @@ function sliderDbToLinearValue(db) {
     return Math.round(linearVol * 100) / 100;
 }
 
-function switchPlayer(tipoTarget) {
-    const placeholder = document.getElementById('player-placeholder');
-
-    console.log(`🎛️ [Interruttore] Switch a caldo richiesto su: ${tipoTarget}`);
-
-    if (tipoTarget === 'youtube') {
-        // --- PASSAGGIO A YOUTUBE ---
-        // Se la webview era vuota su about:blank, significa che è vuota e aspetta il primo caricamento
-
-        const srcProprieta = window.karaoke.players.youtube.src ? window.karaoke.players.youtube.src.trim() : "";
-        const srcAttributo = window.karaoke.players.youtube.getAttribute('src') ? window.karaoke.players.youtube.getAttribute('src').trim() : "";
-
-        // Controllo unico: se uno dei due è vuoto o punta a about:blank
-        if (!srcProprieta || srcProprieta === "about:blank" || !srcAttributo || srcAttributo === "about:blank") {
-            console.log("🌐 [Switch] La webview è vuota. Carico la homepage di YouTube.");
-            caricaVideoYouTube();
-        }
-
-        // Nascondiamo il locale senza resettarlo (mantiene la posizione corrente del brano!)
-        window.karaoke.players.video.style.display = "none";
-        if (placeholder) placeholder.style.display = "none";
-        
-        // Portiamo in primo piano la webview
-        window.karaoke.players.youtube.style.display = "block";
-        
-    } else if (tipoTarget === 'locale') {
-        // --- PASSAGGIO A LOCALE ---
-        // Nascondiamo YouTube (rimane congelato in background senza perdere la pagina aperta)
-        window.karaoke.players.youtube.style.display = "none";
-        if (placeholder) placeholder.style.display = "none";
-        
-        // Mostriamo il player locale offline
-        window.karaoke.players.video.style.display = "block";
-    }
-}
-
-/**
-    * Gestisce la visibilità della modale di caricamento.
-    * @param {boolean} mostra - true per aprire la modale, false per chiuderla.
-    */
-window.toggleModaleAttesa = function(mostra) {
-    const dialog = document.getElementById('modal-attesa');
-    if (!dialog) return;
-
-    if (mostra) {
-        if (!dialog.open) {
-            dialog.showModal();
-        }
-    } else {
-        if (dialog.open) {
-            dialog.close();
-        }
-    }
-};
-
 /**
  * Popola la lista principale #myUL con i risultati ottenuti da YouTube
  * Mantiene la stessa identica struttura DOM dei file locali per coerenza visiva e logica
  * @param {Array} risultati - Array di oggetti video restituiti da yt-dlp
  */
 function aggiornaInterfacciaRicerca(risultati) {
-    const ul = document.getElementById('myUL');
-    if (!ul) {
-        console.error("❌ Impossibile trovare la lista #myUL nel DOM.");
-        return;
-    }
+    if (!window.yto) window.yto = {};
+    if (!window.yto.databaseBasi) window.yto.databaseBasi = [];
 
-    ul.innerHTML = '';
+    // 1. Eliminiamo i vecchi risultati di YouTube precedenti dal database per fare spazio ai nuovi
+    window.yto.databaseBasi = window.yto.databaseBasi.filter(b => b.tipo !== 'youtube');
 
-    if (!risultati || risultati.length === 0) {
-        alert("Nessun risultato trovato su YouTube!");
-        return;
-    }
+    // Array temporaneo di supporto per isolare la vista corrente
+    const soloNuoviRisultatiYouTube = [];
 
+    // 2. Inseriamo i nuovi risultati di YouTube nel database generale
     risultati.forEach(video => {
-        const videoId = video.id;
-        const titoloTesto = video.title;
+        const urlCompleto = video.url || `https://www.youtube.com/watch?v=${video.id}`;
         
-        // 📸 Recuperiamo l'URL dell'anteprima (se non esiste, usiamo un'immagine di fallback vuota)
-        const urlAnteprima = video.thumbnail || video.thumbnails?.[0]?.url || '';
-
-        const li = document.createElement('li');
-        li.setAttribute('data-name', titoloTesto);
-        
-        li.onclick = function () { 
-            const urlCompleto = `https://www.youtube.com/watch?v=${videoId}`;
-            if (typeof window.caricaVideoYouTubeNelTagLocale === 'function') {
-                window.caricaVideoYouTubeNelTagLocale(urlCompleto); 
-            }
-        };
-
-        // Wrapper Flex principale
-        const wrapper = document.createElement("div");
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "center";
-        wrapper.style.justifyContent = "space-between";
-        wrapper.style.width = "100%";
-
-        // Contenitore di sinistra (Immagine + Titolo)
-        const latoSinistro = document.createElement("div");
-        latoSinistro.style.display = "flex";
-        latoSinistro.style.alignItems = "center";
-        latoSinistro.style.gap = "12px"; // Spazio tra anteprima e testo
-
-        // Creazione del tag Immagine per l'anteprima
-        if (urlAnteprima) {
-            const img = document.createElement("img");
-            img.src = urlAnteprima;
-            img.style.width = "50px";          // Dimensione compatta per non allargare troppo il li
-            img.style.height = "35px";         // Mantiene la proporzione 16:9 approssimativa
-            img.style.objectFit = "cover";     // Taglia l'immagine senza distorcerla
-            img.style.borderRadius = "4px";    // Angoli arrotondati moderni
-            img.style.border = "1px solid #334155"; // Un piccolo bordo scuro coordinato
-            latoSinistro.appendChild(img);
+        // Recuperiamo la miniatura migliore o quella di fallback
+        let urlAnteprima = '';
+        if (video.thumbnail) {
+            urlAnteprima = video.thumbnail;
+        } else if (video.thumbnails && video.thumbnails.length > 0) {
+            urlAnteprima = video.thumbnails[video.thumbnails.length - 1].url;
         }
 
-        // Titolo del brano
-        const titolo = document.createElement("span");
-        titolo.innerText = `🔴 [YT] ${titoloTesto}`;
+        const nuovoVideoYT = {
+            tipo: 'youtube', // Manteniamo la tua marcatura 'youtube'
+            titolo: video.title || "Traccia streaming",
+            pathCompleto: urlCompleto, // L'URL completo che verrà digerito dalla funzione play()
+            copertina: urlAnteprima,
+            canale: video.uploader || video.channel || "YouTube Streaming"
+        };
 
-        latoSinistro.appendChild(titolo);
-        wrapper.appendChild(latoSinistro);
-        li.appendChild(wrapper);
-        ul.appendChild(li);
+        // Li mettiamo nel database globale in memoria
+        window.yto.databaseBasi.push(nuovoVideoYT);
+        
+        // Li salviamo anche nell'array temporaneo per la visualizzazione immediata
+        soloNuoviRisultatiYouTube.push(nuovoVideoYT);
     });
 
+    // 3. Mostriamo a schermo SOLO i risultati di YouTube appena cercati
+    console.log(`📺 [YouTube-Search] Mostro ${soloNuoviRisultatiYouTube.length} risultati online nella griglia.`);
+    mostraInGriglia(soloNuoviRisultatiYouTube);
+    
     if (typeof updateStat === 'function') updateStat();
-    // if (typeof filter === 'function') filter();
 }
+
+// Esposizione globale per consentire a avviaRicercaOnline di trovarla
+window.aggiornaInterfacciaRicerca = aggiornaInterfacciaRicerca;

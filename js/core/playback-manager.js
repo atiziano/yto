@@ -8,6 +8,13 @@
  * @param {HTMLElement} el - Elemento della lista da evidenziare (opzionale)
  */
 async function play(fileUrl, el) {
+
+    // Si sposta sul video
+    const riquadroPlayer = document.getElementById('riquadro-player-cyber');
+    if (riquadroPlayer) {
+        riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     const videoPlayer = document.getElementById('vid');
     const placeholder = document.getElementById('player-placeholder');
     const btnPlay = document.getElementById('btn-filler-play');
@@ -21,14 +28,14 @@ async function play(fileUrl, el) {
     const isYouTube = fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be');
 
     // Gestione sottofondo
-    if (window.karaoke.audio.isSetup && fillerNode) {
+    if (window.yto.audio.isSetup && fillerNode) {
         fillerNode.volume.rampTo(-100, 1); 
         setTimeout(() => { 
-            if (isYouTube || isStreamEstratto || !window.karaoke.players.video.paused) window.karaoke.players.sound.pause(); 
+            if (isYouTube || isStreamEstratto || !window.yto.players.video.paused) window.yto.players.sound.pause(); 
         }, 1000);
-    } else if (window.karaoke.players.sound) {
-        window.karaoke.players.sound.pause();
-        window.karaoke.players.sound.volume = 0;
+    } else if (window.yto.players.sound) {
+        window.yto.players.sound.pause();
+        window.yto.players.sound.volume = 0;
     }
 
     // Reset UI filler
@@ -36,8 +43,8 @@ async function play(fileUrl, el) {
     if (btnStop) btnStop.classList.add('btn-filler-active-stop');
     
     // Pulizia video precedente
-    window.karaoke.players.video.onended = null;
-    window.karaoke.players.video.pause();
+    window.yto.players.video.onended = null;
+    window.yto.players.video.pause();
     
     // Aggiornamento UI lista
     document.querySelectorAll('li').forEach(l => l.classList.remove('active'));
@@ -53,24 +60,19 @@ async function play(fileUrl, el) {
     if (isStreamEstratto) {
         console.log("📺 [Play] Rilevato flusso estratto googlevideo. Uso il player locale.");
         
-        if (window.karaoke.players.youtube) {
-            window.karaoke.players.youtube.src = "about:blank"; 
-            window.karaoke.players.youtube.style.display = "none";
-        }
-        
         if (placeholder) placeholder.style.display = "none"; 
-        window.karaoke.players.video.style.display = "block"; 
+        window.yto.players.video.style.display = "block"; 
 
-        window.karaoke.players.video.src = fileUrl;
-        window.karaoke.players.video.load();
-        window.karaoke.players.video.onended = handleVideoEnd;
+        window.yto.players.video.src = fileUrl;
+        window.yto.players.video.load();
+        window.yto.players.video.onended = handleVideoEnd;
 
-        window.karaoke.players.video.muted = false;
-        window.karaoke.players.video.volume = 0;
+        window.yto.players.video.muted = false;
+        window.yto.players.video.volume = 0;
 
         try {
-            await window.karaoke.players.video.play();
-            if (window.karaoke.audio.isSetup && fillerNode) {
+            await window.yto.players.video.play();
+            if (window.yto.audio.isSetup && fillerNode) {
                 fillerNode.volume.rampTo(-100, 1.5);
             }
             fadeIn(videoPlayer, 1.5, 1);
@@ -80,43 +82,48 @@ async function play(fileUrl, el) {
         }
 
     } else if (isYouTube) {
-        console.log("🌐 [Play] Link YouTube standard rilevato. Devio il flusso su yt-dlp...");
+        console.log("🌐 [Play] Link YouTube standard rilevato. Gestione Ibrida attiva per:", fileUrl);
         
-        if (window.caricaVideoYouTubeNelTagLocale) {
-            window.caricaVideoYouTubeNelTagLocale();
-        } else if (window.karaoke.players.youtube.contentWindow && window.karaoke.players.youtube.contentWindow.caricaVideoYouTubeNelTagLocale) {
-            window.karaoke.players.youtube.contentWindow.caricaVideoYouTubeNelTagLocale();
+        const titoloCanzone = el ? el.getAttribute('data-name') : null;
+        
+        // 🎯 Cerca la funzione di download (locala o nel parent)
+        const downloadFn = window.avviaDownloadDaYouTube || window.parent.avviaDownloadDaYouTube;
+
+        if (typeof downloadFn === 'function') {
+            downloadFn(fileUrl, { soloCopertina: false, titolo: titoloCanzone });
         } else {
-            window.karaoke.players.video.style.display = "none";
-            placeholder.style.display = "none";
-            window.karaoke.players.youtube.style.display = "block";
-            window.karaoke.players.youtube.src = fileUrl;
+            console.warn("⚠️ Impossibile avviare il download in background (funzione non trovata).");
+        }
+        
+        // 📺 AVVIA LO STREAMING IMMEDIATO SUL TAG VIDEO LOCALE
+        // Chiamiamo direttamente la funzione estrattrice senza passare da Webview
+        const streamFn = window.caricaVideoYouTubeNelTagLocale || window.parent.caricaVideoYouTubeNelTagLocale;
+
+        if (typeof streamFn === 'function') {
+            streamFn(fileUrl);
+        } else {
+            console.error("❌ Impossibile avviare lo streaming locale: caricaVideoYouTubeNelTagLocale non trovata.");
         }
 
-        if (window.karaoke.audio.isSetup && fillerNode) {
+        if (window.yto?.audio?.isSetup && typeof fillerNode !== 'undefined' && fillerNode) {
             fillerNode.volume.rampTo(-100, 1.5);
         }
 
     } else {
         // File locale classico
-        if (window.karaoke.players.youtube) {
-            window.karaoke.players.youtube.src = "about:blank";
-            window.karaoke.players.youtube.style.display = "none"; 
-        }
-        
         if (placeholder) placeholder.style.display = "none"; 
         
-        window.karaoke.players.video.style.display = "block"; 
-        window.karaoke.players.video.src = fileUrl;
-        window.karaoke.players.video.load(); 
-        window.karaoke.players.video.onended = handleVideoEnd;
+        window.yto.players.video.style.display = "block"; 
+        window.yto.players.video.src = fileUrl;
+        window.yto.players.video.load(); 
+        window.yto.players.video.onended = handleVideoEnd;
         
-        window.karaoke.players.video.muted = false;
-        window.karaoke.players.video.volume = 0;
+        window.yto.players.video.muted = false;
+        window.yto.players.video.volume = 0;
         
         try {
-            await window.karaoke.players.video.play();
-            if (window.karaoke.audio.isSetup && fillerNode) {
+            await window.yto.players.video.play();
+            if (window.yto.audio.isSetup && fillerNode) {
                 fillerNode.volume.rampTo(-100, 1.5);
             }
             fadeIn(videoPlayer, 1.5, 1);
@@ -137,10 +144,10 @@ async function handleVideoEnd() {
     const btnStop = document.getElementById('btn-filler-stop');
 
     // Pulizia Video
-    if (window.karaoke.players.video) {
-        window.karaoke.players.video.pause();
-        window.karaoke.players.video.src = "";
-        window.karaoke.players.video.load();
+    if (window.yto.players.video) {
+        window.yto.players.video.pause();
+        window.yto.players.video.src = "";
+        window.yto.players.video.load();
     }
 
     console.log("Fine brano: ripristino sottofondo.");
@@ -160,13 +167,13 @@ async function handleVideoEnd() {
         console.error("⚠️ Impossibile svegliare Tone.js:", err);
     }
     
-    if (hasValidAudio(window.karaoke.players.sound)) {
-        window.karaoke.players.sound.muted = false;
-        window.karaoke.players.sound.volume = 1;
+    if (hasValidAudio(window.yto.players.sound)) {
+        window.yto.players.sound.muted = false;
+        window.yto.players.sound.volume = 1;
         try {
-            await window.karaoke.players.sound.play();
+            await window.yto.players.sound.play();
             console.log("▶️ Riproduzione tag audio avviata");
-            fadeIn(window.karaoke.players.sound, 2.5, 1);
+            fadeIn(window.yto.players.sound, 2.5, 1);
             console.log("🔊 Volume soundPlayer impostato a 0dB");
         } catch (e) {
             console.error("❌ Errore play tag audio:", e);
@@ -184,7 +191,7 @@ async function handleVideoEnd() {
  * @param {number} targetVol - Volume finale (0.0 a 1.0)
  */
 function fadeIn(player, duration = 1, targetVol = 1) {
-    if (!window.karaoke.audio.isSetup || !fillerNode) return;
+    if (!window.yto.audio.isSetup || !fillerNode) return;
 
     if (player.id === 'suono') {
         player.muted = false;
@@ -207,7 +214,7 @@ function fadeIn(player, duration = 1, targetVol = 1) {
  * @param {number} duration - Secondi della sfumatura
  */
 function fadeOut(player, duration = 1) {
-    if (!window.karaoke.audio.isSetup) {
+    if (!window.yto.audio.isSetup) {
         if (player) player.pause();
         return;
     }

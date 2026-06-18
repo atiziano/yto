@@ -1,5 +1,5 @@
 {
-  "name": "karaoke-offline",
+  "name": "youtube-offline",
   "main": "index.html",
   "single-instance": true,
   "window": {
@@ -10,19 +10,9 @@
     "resizable": true,
     "min_width": 1024,
     "min_height": 576,
-    "toolbar": true
+    "toolbar": false
   },
   "chromium-args": "--autoplay-policy=no-user-gesture-required",
-  "webview": {
-    "partitions": [
-      {
-        "name": "trusted",
-        "accessible_resources": [
-          "<all_urls>"
-        ]
-      }
-    ]
-  },
   "dependencies": {
     "yt-dlp-wrap": "^2.3.12"
   }

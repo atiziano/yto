@@ -1,132 +1,117 @@
 // ==========================================================================
 // FILE LOADER - Caricamento file video e ricerca
 // ==========================================================================
+/**
+ * L'UNICO MOTORE DI CARICAMENTO LOCALE
+ * Scansiona una cartella qualsiasi tramite Node.js e popola la griglia.
+ * @param {string} percorsoAssoluto - Il percorso della cartella da leggere
+ */
+function caricaCartellaLocale(percorsoAssoluto) {
+    if (!fs.existsSync(percorsoAssoluto)) {
+        fs.mkdirSync(percorsoAssoluto, { recursive: true });
+    }
+
+    console.log("📂 [Core-Loader] Scansione cartella in corso:", percorsoAssoluto);
+
+    fs.readdir(percorsoAssoluto, (err, files) => {
+        if (err) {
+            console.error("❌ Errore nella lettura della cartella:", err);
+            return;
+        }
+
+        const videoFiles = files.filter(file => file.toLowerCase().endsWith('.mp4'));
+        const immagini = files.filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file));
+        
+        // Mappa delle copertine
+        const mappaCopertine = {};
+        immagini.forEach(img => {
+            const nomePuro = img.substring(0, img.lastIndexOf('.'));
+            const pathAssolutoImg = path.join(percorsoAssoluto, img);
+            mappaCopertine[nomePuro] = 'file:///' + pathAssolutoImg.replace(/\\/g, '/'); 
+        });
+
+        // Inizializza l'oggetto e l'array globale SOLO se non esistono ancora
+        if (!window.yto) window.yto = {};
+        if (!window.yto.databaseBasi) window.yto.databaseBasi = [];
+
+        const tracceMancantiDiCopertina = [];
+
+        videoFiles.forEach(file => {
+            const nomePuro = file.substring(0, file.lastIndexOf('.'));
+            const pathCompletoVideo = path.join(percorsoAssoluto, file);
+            const urlVideoUniversale = 'file:///' + pathCompletoVideo.replace(/\\/g, '/');
+            
+            // 🎯 CONTROLLO DI ESISTENZA: Verifica se questo file è già presente nel database
+            const giaPresente = window.yto.databaseBasi.some(base => base.pathCompleto === urlVideoUniversale);
+            
+            // Se il brano esiste già, saltiamo il push e passiamo al prossimo file
+            if (giaPresente) {
+                return; 
+            }
+
+            let copertinaAssegnata = mappaCopertine[nomePuro];
+
+            if (!copertinaAssegnata) {
+                copertinaAssegnata = ''; 
+                tracceMancantiDiCopertina.push({
+                    titolo: nomePuro,
+                    nomeFile: file
+                });
+            }
+
+            // Aggiunge il brano SOLO se ha superato il controllo di esistenza
+            window.yto.databaseBasi.push({
+                tipo: 'locale',
+                nomeFile: file,
+                titolo: nomePuro,
+                pathCompleto: urlVideoUniversale,
+                copertina: copertinaAssegnata 
+            });
+        });
+
+        // Ordina alfabeticamente
+        window.yto.databaseBasi.sort((a, b) => a.titolo.localeCompare(b.titolo));
+        
+        // Renderizza usando il sovrano unico
+        mostraInGriglia(window.yto.databaseBasi);
+        
+        if (typeof updateStat === "function") updateStat();
+        if (typeof filter === "function") filter();
+        
+        // Coda download copertine
+        if (typeof eseguiCodaDownloadCopertine === "function" && tracceMancantiDiCopertina.length > 0) {
+            const codaStandard = tracceMancantiDiCopertina.map(t => ({
+                titolo: t.titolo,
+                soloCopertina: true
+            }));
+            eseguiCodaDownloadCopertine(percorsoAssoluto, codaStandard);
+        }
+    });
+}
 
 /**
  * Carica i file video selezionati e li mostra nella lista, ordinati alfabeticamente
  * @param {HTMLInputElement} input - L'input file da cui leggere i video
  */
 function loadExternalFiles(input) {
-    if (!input.files || input.files.length === 0) {
-        alert("Nessun file selezionato o cartella vuota!");
-        return;
-    }
-
-    const allFiles = Array.from(input.files);
+    if (!input.files || input.files.length === 0) return;
     
-    // 1. Isoliamo i video .mp4
-    const videoFiles = allFiles.filter(f => f.name.toLowerCase().endsWith('.mp4'));
-
-    if (videoFiles.length === 0) {
-        alert("Nella cartella non ci sono video .mp4 validi per il karaoke!");
-        return;
-    }
-
-    // Recuperiamo il percorso assoluto reale della cartella (Funzionalità nativa NW.js)
-    const percorsoCartellaReale = input.files[0].path ? path.dirname(input.files[0].path) : null;
-
-    // 2. Creiamo una mappa rapida delle immagini presenti nella cartella.
-    const mappaCopertine = {};
-    allFiles.forEach(f => {
-        const nomeMinuscolo = f.name.toLowerCase();
-        if (nomeMinuscolo.endsWith('.jpg') || nomeMinuscolo.endsWith('.jpeg') || nomeMinuscolo.endsWith('.png') || nomeMinuscolo.endsWith('.webp')) {
-            const nomePuro = f.name.substring(0, f.name.lastIndexOf('.'));
-            mappaCopertine[nomePuro] = URL.createObjectURL(f);
-        }
-    });
-
-    const ul = document.getElementById('myUL');
-    ul.innerHTML = '';
-
-    // Array di supporto per tracciare quali video hanno bisogno del download della copertina
-    const tracceMancantiDiCopertina = [];
-
-    // 3. Generiamo la lista
-    videoFiles.sort((a, b) => a.name.localeCompare(b.name)).forEach(f => {
-        const li = document.createElement('li');
-        const urlVideo = URL.createObjectURL(f);
-        li.setAttribute('data-name', f.name);
-        li.onclick = function () { play(urlVideo, this); };
-
-        const wrapper = document.createElement("div");
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "center";
-        wrapper.style.justifyContent = "space-between";
-        wrapper.style.width = "100%";
-
-        const latoSinistro = document.createElement("div");
-        latoSinistro.style.display = "flex";
-        latoSinistro.style.alignItems = "center";
-        latoSinistro.style.gap = "12px";
-
-        const nomeVideoPuro = f.name.substring(0, f.name.lastIndexOf('.'));
-
-        // 🖼️ CONTROLLO COPERTINA: C'è la foto corrispondente nella cartella?
-        if (mappaCopertine[nomeVideoPuro]) {
-            // Se esiste, carichiamo la foto statica locale
-            const img = document.createElement("img");
-            img.src = mappaCopertine[nomeVideoPuro];
-            img.style.width = "50px";
-            img.style.height = "35px";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "4px";
-            img.style.border = "1px solid #334155";
-            latoSinistro.appendChild(img);
-        } else {
-            // Se non c'è la foto, mettiamo il quadratino di riserva ma IDentifichiamo il contenitore
-            // per poterci iniettare l'immagine non appena yt-dlp finirà il download scaricato
-            const iconaLocale = document.createElement("div");
-            iconaLocale.style.width = "50px";
-            iconaLocale.style.height = "35px";
-            iconaLocale.style.display = "flex";
-            iconaLocale.style.alignItems = "center";
-            iconaLocale.style.justifyContent = "center";
-            iconaLocale.style.borderRadius = "4px";
-            iconaLocale.style.backgroundColor = "#1e293b";
-            iconaLocale.style.border = "1px solid #334155";
-            iconaLocale.style.fontSize = "16px";
-            iconaLocale.style.color = "#38bdf8";
-            iconaLocale.innerHTML = "&#x266B;"; 
-            
-            // Assegniamo una classe e un id univoco basato sul nome del file per intercettarlo dopo
-            iconaLocale.id = `thumb-${btoa(encodeURIComponent(nomeVideoPuro)).replace(/=/g, "")}`;
-            
-            latoSinistro.appendChild(iconaLocale);
-
-            // Salviamo il titolo tra quelli da scaricare
-            tracceMancantiDiCopertina.push({
-                titolo: nomeVideoPuro,
-                elementId: iconaLocale.id
-            });
-        }
-
-        const titolo = document.createElement("span");
-        titolo.innerText = f.name;
-
-        latoSinistro.appendChild(titolo);
-        wrapper.appendChild(latoSinistro);
-        li.appendChild(wrapper);
-        ul.appendChild(li);
-    });
-
-    updateStat();
-    filter();
-
-    // 🚀 CONTROLLO AUTOMATICO COPERTINE MANCANTI (In background)
-    if (percorsoCartellaReale && tracceMancantiDiCopertina.length > 0) {
-        console.log(`⏳ [Background] Rilevati ${tracceMancantiDiCopertina.length} video senza copertina. Avvio download asincrono...`);
-        // Lanciamo la coda di download senza 'await' per non bloccare l'interfaccia utente
-        eseguiCodaDownloadCopertine(percorsoCartellaReale, tracceMancantiDiCopertina);
+    // Sfruttiamo NW.js per estrarre il percorso reale assoluto della cartella scelta dal PC!
+    const percorsoCartellaScelta = input.files[0].path ? path.dirname(input.files[0].path) : null;
+    
+    if (percorsoCartellaScelta) {
+        caricaCartellaLocale(percorsoCartellaScelta);
     } else {
-        console.log("%c✨ [Background] Tutte le copertine sono già presenti in locale!", "color: #22c55e; font-weight: bold;");
+        alert("Impossibile recuperare il percorso della cartella.");
     }
 }
 
 async function eseguiCodaDownloadCopertine(cartella, listaTracce) {
+
     const percorsoYtdlp = path.join(process.cwd(), 'bin', 'yt', 'yt-dlp.exe');
     const totaleTracce = listaTracce.length;
 
-    if (totaleTracce > 50) {
+    if (totaleTracce > 50 && listaTracce[0].soloCopertina !== false) {
         const conferma = confirm(`⚠️ Ci sono ben ${totaleTracce} canzoni senza copertina.\n\nVuoi procedere comunque lentamente in background?`);
         if (!conferma) return;
     }
@@ -136,80 +121,99 @@ async function eseguiCodaDownloadCopertine(cartella, listaTracce) {
         return;
     }
 
-    console.log(`%c🚀 [Sincronizzazione Mirata Karaoke] Elaboro ${totaleTracce} copertine...`, "color: #38bdf8; font-weight: bold;");
-
     const percorsoTempIniziale = path.join(process.cwd(), 'bin', 'yt', 'temp_thumb');
+    const cartellaBin = path.join(process.cwd(), 'bin', 'yt');
 
     for (let i = 0; i < totaleTracce; i++) {
         const traccia = listaTracce[i];
-        const indiceVisuale = i + 1;
         
-        console.log(`%c⏳ [${indiceVisuale}/${totaleTracce}] Ricerca per: "${traccia.titolo}"`, "color: #94a3b8;");
-
         try {
-            // --- LOGICA DI OTTIMIZZAZIONE DELLA QUERY ---
-            const titoloMinuscolo = traccia.titolo.toLowerCase();
             let titoloCercaYT = traccia.titolo.replace(/[\(\)\[\]]/g, "").trim();
-
-            console.log(`%c   ▶ Cerco su YT: "${titoloCercaYT}"`, "color: #cbd5e1; font-style: italic;");
-            // --------------------------------------------
-
             const estensioniPossibili = ['.jpg', '.webp', '.png', '.jpeg'];
-            estensioniPossibili.forEach(est => {
-                const vecchioTemp = `${percorsoTempIniziale}${est}`;
-                if (fs.existsSync(vecchioTemp)) fs.unlinkSync(vecchioTemp);
-            });
 
-            const comando = `"${percorsoYtdlp}" "ytsearch1:${titoloCercaYT}" --skip-download --write-thumbnail --no-check-certificates --extractor-args "youtube:player_client=android" -o "${percorsoTempIniziale}.%(ext)s"`;
+            let comando = "";
+            if (traccia.soloCopertina === false) {
+                console.log(`%c   ▶ [Download Completo] Video + Cover per: "${traccia.titolo}"`, "color: #38bdf8;");
+                // Proteggiamo i percorsi con le virgolette per evitare i crash di Windows
+                const fileUscitaPattern = path.join(cartella, `${traccia.titolo}.%(ext)s`);
+                comando = `"${percorsoYtdlp}" "${traccia.urlYt}" -f "mp4" --write-thumbnail --convert-thumbnails jpg --ffmpeg-location "${cartellaBin}" --no-check-certificates --extractor-args "youtube:player_client=android" -o "${fileUscitaPattern}"`;
+            } else {
+                // Svuotiamo i vecchi file temporanei
+                estensioniPossibili.forEach(est => {
+                    const vecchioTemp = `${percorsoTempIniziale}${est}`;
+                    if (fs.existsSync(vecchioTemp)) fs.unlinkSync(vecchioTemp);
+                });
+                comando = `"${percorsoYtdlp}" "ytsearch1:${titoloCercaYT}" --skip-download --write-thumbnail --no-check-certificates --extractor-args "youtube:player_client=android" -o "${percorsoTempIniziale}.%(ext)s"`;
+            }
 
+            // Eseguiamo il comando di yt-dlp
             await new Promise((resolve, reject) => {
-                exec(comando, (error, stdout, stderr) => {
+                exec(comando, (error) => {
                     if (error) return reject(error);
                     resolve();
                 });
             });
 
-            let fileTemporaneoTrovato = null;
-            let estensioneTrovata = '';
+            let urlImmagineCruco = '';
 
-            for (const est of estensioniPossibili) {
-                const verificaTemp = `${percorsoTempIniziale}${est}`;
-                if (fs.existsSync(verificaTemp)) {
-                    fileTemporaneoTrovato = verificaTemp;
-                    estensioneTrovata = est;
-                    break;
-                }
-            }
-
-            if (fileTemporaneoTrovato) {
-                const percorsoDestinazioneFinale = path.join(cartella, `${traccia.titolo}${estensioneTrovata}`);
-                fs.renameSync(fileTemporaneoTrovato, percorsoDestinazioneFinale);
-
-                console.log(`%c   ▶ ✅ COPERTINA GENERATA! -> "${traccia.titolo}${estensioneTrovata}"`, "color: #22c55e; font-weight: bold;");
-
-                const contenitoreNota = document.getElementById(traccia.elementId);
-                if (contenitoreNota) {
-                    const img = document.createElement("img");
-                    img.src = `file:///${percorsoDestinazioneFinale.replace(/\\/g, '/')}`;
-                    img.style.width = "50px";
-                    img.style.height = "35px";
-                    img.style.objectFit = "cover";
-                    img.style.borderRadius = "4px";
-                    img.style.border = "1px solid #334155";
-                    
-                    contenitoreNota.replaceWith(img);
+            if (traccia.soloCopertina === false) {
+                // Cerchiamo la copertina reale appena creata insieme al video
+                for (const est of estensioniPossibili) {
+                    const verificaCoverFinale = path.join(cartella, `${traccia.titolo}${est}`);
+                    if (fs.existsSync(verificaCoverFinale)) {
+                        urlImmagineCruco = 'file:///' + verificaCoverFinale.replace(/\\/g, '/');
+                        break;
+                    }
                 }
             } else {
-                console.log(`%c   ▶ ⚠️ Nessun file temp trovato.`, "color: #eab308;");
+                // Gestione del file temporaneo spostato per l'init
+                let fileTemporaneoTrovato = null;
+                let estensioneTrovata = '';
+
+                for (const est of estensioniPossibili) {
+                    const verificaTemp = `${percorsoTempIniziale}${est}`;
+                    if (fs.existsSync(verificaTemp)) {
+                        fileTemporaneoTrovato = verificaTemp;
+                        estensioneTrovata = est;
+                        break;
+                    }
+                }
+
+                if (fileTemporaneoTrovato) {
+                    const percorsoDestinazioneFinale = path.join(cartella, `${traccia.titolo}${estensioneTrovata}`);
+                    fs.renameSync(fileTemporaneoTrovato, percorsoDestinazioneFinale);
+                    urlImmagineCruco = 'file:///' + percorsoDestinazioneFinale.replace(/\\/g, '/');
+                }
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Aggiorniamo la memoria globale dell'applicazione
+            const baseInMemoria = window.yto.databaseBasi.find(b => b.titolo === traccia.titolo && b.tipo === 'locale');
+
+            if (baseInMemoria) {
+                baseInMemoria.copertina = urlImmagineCruco;
+                
+                if (traccia.soloCopertina === false) {
+                    baseInMemoria.nomeFile = `${traccia.titolo}.mp4`;
+                    baseInMemoria.pathCompleto = path.join(cartella, `${traccia.titolo}.mp4`);
+                }
+            }
+
+            // Rinfresca l'interfaccia
+            if (typeof mostraInGriglia === "function") {
+                // Se stiamo scaricando attivamente, isoliamo la card; se è l'init iniziale mostriamo tutto
+                if (traccia.soloCopertina === false) {
+                    mostraInGriglia([baseInMemoria].filter(Boolean));
+                } else {
+                    mostraInGriglia(window.yto.databaseBasi);
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
 
         } catch (err) {
-            console.error(`%c   ▶ ❌ Errore per: "${traccia.titolo}"`, "color: #f43f5e; font-weight: bold;");
+            console.error(`❌ Errore nel ciclo di download per: "${traccia.titolo}"`, err);
         }
     }
-    console.log("%c✨ [Sincronizzazione] Completata!", "color: #22c55e; font-weight: bold;");
 }
 
 /**
@@ -227,7 +231,11 @@ function filter() {
 
     for (let i = 0; i < li.length; i++) {
         const item = li[i];
-        const txt = item.getAttribute('data-name') || '';
+        
+        // Recuperiamo il nome ed eliminiamo l'estensione se presente, per un filtro pulito
+        let txt = item.getAttribute('data-name') || '';
+        txt = txt.replace(/\.mp4$/i, ''); 
+        
         const txtUpper = txt.toUpperCase();
 
         // Verifichiamo se TUTTE le parole cercate sono contenute nel titolo (anche non consecutive)
@@ -236,20 +244,19 @@ function filter() {
         if (matchTrovato || paroleCercate.length === 0) {
             item.style.display = "";
 
-            // Trova lo span interno del titolo per non distruggere il wrapper flex
-            const spanTitolo = item.querySelector('span');
-            if (spanTitolo) {
+            // 🎯 CORREZIONE: Cerchiamo 'h4' che è il tag reale usato nelle nuove card grandi
+            const h4Titolo = item.querySelector('h4');
+            if (h4Titolo) {
                 if (paroleCercate.length > 0) {
                     // Crea una regex che intercetta tutte le parole cercate separate da un "or" (|)
-                    // Es: (parola1|parola2)
                     const pattern = paroleCercate.map(p => escapeRegExp(p)).join('|');
                     const regex = new RegExp(`(${pattern})`, "gi");
                     
-                    // Evidenzia i match sul testo puro del titolo
-                    spanTitolo.innerHTML = txt.replace(regex, "<span class='search-match'>$1</span>");
+                    // Evidenzia i match sul testo del titolo h4
+                    h4Titolo.innerHTML = txt.replace(regex, "<span class='search-match'>$1</span>");
                 } else {
-                    // Se l'input è vuoto, ripristina il testo originale pulito
-                    spanTitolo.innerText = txt;
+                    // Se l'input è vuoto, ripristina il testo originale pulito senza tag di evidenziazione
+                    h4Titolo.innerText = txt;
                 }
             }
         } else {
@@ -274,5 +281,5 @@ function updateStat() {
     const total = document.querySelectorAll("#myUL li").length;
     const visible = document.querySelectorAll("#myUL li:not([style*='display: none'])").length;
     const statEl = document.getElementById("stat");
-    if (statEl) statEl.innerHTML = visible + " / " + total + " canzoni";
+    if (statEl) statEl.innerHTML = visible + " / " + total;
 }

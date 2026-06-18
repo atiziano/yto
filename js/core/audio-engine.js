@@ -43,7 +43,7 @@ const eqFrequenze = [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
  * Inizializza la catena audio completa di Tone.js
  */
 async function setupAudio() {
-    if (window.karaoke.audio.isSetup) return;
+    if (window.yto.audio.isSetup) return;
 
     try {
         await Tone.start();
@@ -152,23 +152,23 @@ async function setupAudio() {
         panner.connect(limiter);
 
         // ===== 8) SORGENTE VIDEO =====
-        if (window.karaoke.players.video && !videoSource) {
-            videoSource = Tone.getContext().createMediaElementSource(window.karaoke.players.video);
+        if (window.yto.players.video && !videoSource) {
+            videoSource = Tone.getContext().createMediaElementSource(window.yto.players.video);
             Tone.connect(videoSource, midGain);
             Tone.connect(videoSource, sideGain);
             console.log("🎤 Video collegato alla catena coerente.");
         }
 
         // ===== 9) SORGENTE FILLER =====
-        if (window.karaoke.players.sound && !soundSource) {
-            soundSource = Tone.getContext().createMediaElementSource(window.karaoke.players.sound);
+        if (window.yto.players.sound && !soundSource) {
+            soundSource = Tone.getContext().createMediaElementSource(window.yto.players.sound);
             Tone.connect(soundSource, fillerVolumeNode);
             fillerVolumeNode.connect(fillerNode);
             fillerNode.connect(volumeNode);
             console.log("🎶 Sottofondo collegato.");
         }
 
-        window.karaoke.audio.isSetup = true;
+        window.yto.audio.isSetup = true;
         console.log("🔊 Setup Audio COMPLETO e FUNZIONANTE!");
         if (typeof updateMeter === "function") updateMeter();
 

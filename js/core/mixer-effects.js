@@ -72,7 +72,7 @@ function updateFX(type, val, iniziale = false) {
         }
     }
 
-    if (!window.karaoke.audio.isSetup) return;
+    if (!window.yto.audio.isSetup) return;
 
     switch (type) {
         // MIXER
@@ -126,7 +126,7 @@ function updateFX(type, val, iniziale = false) {
 
         // VELOCITÀ VIDEO
         case "speed": 
-            if (window.karaoke.players.video) window.karaoke.players.video.playbackRate = num; 
+            if (window.yto.players.video) window.yto.players.video.playbackRate = num; 
             break;
 
         // VOCAL REMOVER

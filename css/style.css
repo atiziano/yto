@@ -1,167 +1,267 @@
 /* ==========================================================================
-   1. RESET E VARIABILI GLOBALI (Cyber-Dark Theme)
+   1. RESET E VARIABILI GLOBALI (YouTube-Dark Style + Cyber Accents)
    ========================================================================== */
 :root {
-    --bg-main: #090d16;          /* Sfondo ultra-dark */
-    --bg-sidebar: #0f172a;       /* Sfondo barra laterale */
-    --bg-panel: #1e293b;         /* Sfondo pannelli mixer/effetti */
-    --bg-search: #d0eb36;        /* Giallo evidenziatore ricerca */
-    --accent: #8b5cf6;           /* Viola primario neon */
-    --accent-hover: #a78bfa;     /* Viola chiaro per hover */
-    --success: #10b981;          /* Verde smeraldo attivo */
-    --danger: #ef4444;           /* Rosso alert */
-    --text-main: #f8fafc;        /* Testo principale bianco */
-    --text-muted: #94a3b8;       /* Testo secondario grigio */
-    --text-search: #0d0e0b;      /* Testo scuro per evidenziare i risultati di ricerca */
-    --border-color: #334155;     /* Bordi tech */
-    --radius: 12px;              /* Arrotondamento moderno */
-    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    /* ==========================================================================
+       IL TUO SFONDO ULTRA-DARK RIPRISTINATO
+       ========================================================================== */
+    --bg-base: #090d16;           /* Sfondo principale ultra-dark che preferisci */
+    --bg-header: #0f172a;         /* La barra superiore ora si abbina al bluastro scuro */
+    --bg-sidebar: #0f172a;        /* La sidebar prende lo sfondo coerente del vecchio pro */
+    
+    /* ==========================================================================
+       SUPERFICI E CONTRASTI (Stile YouTube ma su base Blu-Dark)
+       ========================================================================== */
+    --bg-surface: #1e293b;        /* Superficie dei pannelli fluttuanti e card (ex #1f1f1f) */
+    --bg-input: #0d1222;          /* Input box di ricerca leggermente più scuro dello sfondo */
+    --bg-panel: #1e293b;          /* Colore pannelli hardware (preservato) */
+    --bg-search: #d0eb36;         /* Giallo evidenziatore ricerca */
+    
+    /* ACCENTI E COLORI LIVE */
+    --accent-red: #ff0000;        /* Rosso nativo Live YouTube */
+    --accent: #8b5cf6;            /* Viola primario neon per i controlli studio */
+    --accent-hover: #a78bfa;      /* Viola chiaro per gli stati hover */
+    --success: #10b981;           /* Verde smeraldo attivo */
+    --danger: #ef4444;            /* Rosso alert */
+    
+    /* TESTI E BORDI ADATTATI */
+    --text-primary: #f8fafc;      /* Testo principale bianco nitido */
+    --text-secondary: #94a3b8;    /* Testo secondario grigio-azzurro pulito */
+    --text-muted: #64748b;        /* Testo disattivato/muto */
+    --text-search: #0d0e0b;       /* Testo scuro per evidenziare */
+    --border-main: #1e293b;       /* Bordi scuri coordinati */
+    --border-color: #334155;      /* Bordi per pannelli ed effetti */
+    --radius: 12px;               /* Arrotondamento moderno */
+    --shadow: 0 12px 24px rgba(0,0,0,0.6);
+    --yt-font: "Roboto", "Arial", sans-serif;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--yt-font);
     -webkit-font-smoothing: antialiased;
 }
 
 body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
+    background-color: var(--bg-base);
+    color: var(--text-primary);
     height: 100vh;
+    width: 100vw;
     display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Evita fastidiosi doppi scorrimenti sull'applicazione */
+}
+
+/* ==========================================================================
+   2. STRUCTURE: BARRA SUPERIORE (HEADER)
+   ========================================================================== */
+#youtube-top-bar {
+    height: 56px;
+    background-color: var(--bg-header);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+    z-index: 1100; /* Sta sopra a tutto */
+    border-bottom: 1px solid var(--border-main);
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#menu-toggle {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+#menu-toggle:hover { background: #272727; }
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+    font-size: 19px;
+    letter-spacing: -0.5px;
+}
+.logo-text {
+    font-size: 22px;
+    color: var(--text-secondary);
+    vertical-align: super;
+    margin-left: 2px;
+}
+.logo-badge {
+    font-size: 11px;
+    color: var(--text-secondary);
+    vertical-align: super;
+    margin-left: 2px;
+}
+
+/* BOX DI RICERCA CENTRALIZZATO (STILE YT ORIGINALE) */
+.top-center {
+    flex: 0 1 600px;
+}
+
+.search-box-wrapper {
+    display: flex;
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-main);
+    border-radius: 40px;
     overflow: hidden;
 }
 
-/* ==========================================================================
-   2. SIDEBAR E CONTENITORI
-   ========================================================================== */
-#sidebar {
-    width: 320px;
-    min-width: 320px;
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    position: relative;
-    box-shadow: 5px 0 25px rgba(0,0,0,0.3);
-    z-index: 10;
-}
-
-#search-container {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    background: linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(15,23,42,0.8) 100%);
-}
-
-.search-row {
-    display: flex;
-    gap: 8px;              /* Spazio orizzontale tra la cartella e l'input */
-    margin-top: 12px;
-    margin-bottom: 8px;
-    width: 100%;
-    align-items: center;   /* Allinea verticalmente al centro la cartella e il cerca */
-}
-
-/* Stile protetto e dedicato per l'evidenziatore della ricerca */
-.search-match {
-    background-color: var(--bg-search) !important;
-    color: var(--text-search) !important;
-}
-
-/* La barra di ricerca ora occupa tutto lo spazio rimanente a destra della cartella */
 #myInput {
+    font-size: 18px !important;
     flex-grow: 1;
-    width: 100%;
-    height: 40px;            /* Stessa altezza del pulsante cartella */
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 0 14px;
-    border-radius: var(--radius);
+    height: 40px;
+    background: transparent;
+    background-color: var(--bg-input);
+    border: none;
+    color: var(--text-primary);;
+    padding: 0 16px;
     font-size: 14px;
     outline: none;
-    box-sizing: border-box;
 }
 
-#myInput:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+/* 🎯 Ingrandisce anche il testo del segnaposto (placeholder) "Cerca una canzone..." */
+#myInput::placeholder {
+    font-size: 16px;            /* Un filo più piccolo del testo digitato per eleganza */
+    color: var(--text-muted);   /* Usa il tuo grigio disattivato */
 }
 
-/* Lista Canzoni (Scrollabile e stilizzata) */
-#myUL {
-    list-style: none;
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px 15px;
-}
-
-/* Stile per ogni elemento della lista */
-#myUL li {
-    padding: 12px 14px;
-    margin-bottom: 6px;
-    background-color: rgba(255, 255, 255, 0.02);
-    border: 1px solid transparent;
-    border-radius: var(--radius);
+.search-btn {
+    width: 64px;
+    background-color: #222222;
+    border: none;
+    border-left: 1px solid var(--border-main);
+    color: white;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.15s ease;
-    display: block;
+    font-size: 15px;
+    transition: background 0.2s;
+}
+
+.search-btn:hover { background: #2f2f2f; }
+
+.search-select {
+    background-color: var(--bg-header); /* Si coordina perfettamente con lo sfondo della barra/input */
+    color: var(--text-secondary);         /* Bianco nitido per il testo dei numeri */
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Per evitare che le opzioni dentro la tendina abbiano sfondi bianchi brutti su Windows */
+.search-select option {
+    background-color: var(--bg-header);
+    color: var(--text-secondary);
+    border: none;
+}
+
+.top-right {
+    display: flex;
     align-items: center;
-    transition: all 0.2s ease-in-out !important;
+    gap: 15px;
+}
+.upload-btn {
+    background: #272727;
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-#myUL li:hover {
-    background-color: rgba(139, 92, 246, 0.08);
-    border-color: rgba(139, 92, 246, 0.3);
-    transform: translateX(2px);
-}
+.upload-btn:hover { background: #3f3f3f; }
 
-/* Sfrutta le variabili root per tenere la canzone corrente illuminata nel tempo */
-#myUL li.active,
-#myUL li.selected {
-    background-color: rgba(139, 92, 246, 0.2) !important; /* Trasparenza sul viola accent */
-    border-left: 4px solid var(--accent) !important;       /* Linea verticale viola neon */
-    border-bottom: 1px solid var(--border-color) !important;
-    color: var(--text-main) !important;
-    font-weight: bold !important;
-    transform: translateX(4px) !important;                  /* Slitta a destra di 4px */
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important; /* Bagliore cyberpunk */
-}
-
-.panel-scroll {
-    max-height: 35vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-color: var(--border-color) transparent;
-}
-
-#myUL::-webkit-scrollbar,
-.panel-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-#myUL::-webkit-scrollbar-thumb,
-.panel-scroll::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
-}
-
-#myUL::-webkit-scrollbar-thumb:hover,
-.panel-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
-}
+#stat { font-size: 13px; color: var(--text-secondary); }
 
 /* ==========================================================================
-   3. PULSANTI E COMPONENTI INTERFACCIA
+   3. WORKSPACE PRINCIPALE E SIDEBAR OVERLAY A SCOMPARSA
    ========================================================================== */
+#main-layout-container {
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
+    height: calc(100vh - 56px);
+    position: relative;
+}
+
+/* LA SIDEBAR IN MODALITÀ OVERLAY PURO (Non stringe e non ridimensiona il video!) */
+#sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--bg-base);
+    height: 100%;
+    z-index: 1050; /* Sopra all'area contenuti destra */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.7);
+    border-right: 1px solid var(--border-main);
+    transition: transform 0.25s cubic-bezier(0.075, 0.82, 0.165, 1), width 0.25s ease, opacity 0.25s ease;
+}
+
+.sidebar-visible {
+    width: 260px;
+    min-width: 260px;
+    padding: 12px;
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.sidebar-hidden {
+    width: 260px;
+    min-width: 260px;
+    padding: 12px;
+    transform: translateX(-100%); /* Slitta fuori dallo schermo a sinistra */
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-scrollable-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.sidebar-section {
+    padding: 12px 0;
+    border-bottom: 1px solid #272727;
+}
+.section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* GRIGLIE PULSANTI CONTROLLO INTERNI SIDEBAR */
+.controls-vertical-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .btn-fx {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
-    color: var(--text-main);
+    color: var(--text-primary);
     border-radius: var(--radius);
     padding: 10px 14px;
     font-size: 13px;
@@ -172,27 +272,37 @@ body {
     justify-content: center;
     transition: all 0.2s ease;
     position: relative;
-    padding:8px 5px;
-    font-size:11px;
-    flex:1;
-    border: 1px solid transparent !important;
     box-sizing: border-box;
 }
+.btn-fx.active { border-color: var(--accent) !important; }
+.btn-fx:not(.active) { border-color: var(--border-color) !important; }
+.btn-fx:hover:not([disabled]) { background-color: rgba(255,255,255,0.05); border-color: var(--text-muted); }
 
-.btn-fx.active {
-    border-color: var(--accent) !important;
+.filler-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
 }
-
-.btn-fx:not(.active) {
-    border-color: var(--border-color) !important;
+.filler-row input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-main);
+    color: var(--text-primary);
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 11px;
 }
-
-.btn-fx:hover:not([disabled]) {
-    background-color: rgba(255,255,255,0.05);
-    border-color: var(--text-muted);
+.mini-btn {
+    background: #272727;
+    border: none;
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
 }
+.mini-btn:hover { background: #3f3f3f; }
 
-/* Stati speciali pulsanti Filler */
+/* STATI SPECIALI FILLER (Live Neon Effects) */
 .btn-filler-active-play {
     background-color: rgba(16, 185, 129, 0.15) !important;
     border-color: var(--success) !important;
@@ -200,35 +310,28 @@ body {
     box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
     animation: pulseGlow 2s infinite;
 }
-
 .btn-filler-active-stop {
     background-color: rgba(239, 68, 68, 0.15) !important;
     border-color: var(--danger) !important;
     color: var(--danger) !important;
 }
-
 @keyframes pulseGlow {
     0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
     50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
     100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
 }
 
-/* Sezioni in fondo alla barra laterale */
+/* SEZIONI FISSE IN FONDO ALLA SIDEBAR */
 #filler-controls, #button-playing {
     padding: 15px 20px;
-    border-top: 1px solid var(--border-color);
-    background-color: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid var(--border-main);
+    background-color: rgba(15, 23, 42, 0.95);
+    flex-shrink: 0;
 }
+#button-playing { padding-bottom: 25px; display: flex; gap: 8px; }
+#button-playing .btn-fx { flex: 1; }
 
-#button-playing {
-    padding-bottom: 25px; /* Spazio extra in fondo */
-}
-
-#button-playing .btn-fx {
-    flex: 1;
-}
-
-/* Badge cantanti */
+/* BADGE DEI CANTANTI IN CODA */
 #singer-count-badge {
     position: absolute;
     top: -5px;
@@ -243,25 +346,20 @@ body {
 }
 
 /* ==========================================================================
-   4. PANNELLI FLUTTUANTI (Mixer, Effetti, Cantanti)
+   4. PANNELLI FLOATING (Mixer, Effetti, Cantanti e Cyber Studio)
    ========================================================================== */
-#mixer-panel, #pitch-panel, #singer-panel {
-    display: none; /* Gestito da JS */
+#mixer-panel, #pitch-panel, #singer-panel, .floating-youtube-panel, #studio-panel {
+    display: none; /* Gestito nativamente da JS */
     position: absolute;
-    
-    /* Agganciamo il pannello sopra la sezione dei controlli in basso */
-    bottom: 165px; 
-    left: 15px;
-    
-    /* Calcoliamo la larghezza esatta sottraendo i margini laterali (15px a sinistra + 15px a destra) */
-    width: calc(100% - 30px); 
-    
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 15px;
-    box-shadow: var(--shadow);
-    z-index: 100;
+    bottom: 110px; /* Si ancora sopra le pulsantiere inferiori */
+    left: 275px;  /* Si apre esattamente a fianco della barra overlay aperta */
+    width: 320px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-main);
+    border-radius: 12px;
+    padding: 16px;
+    z-index: 1200; /* Sta sopra alla barra di navigazione */
+    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
     backdrop-filter: blur(10px);
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -282,37 +380,26 @@ body {
 }
 .close-panel:hover { color: var(--danger); }
 
-.control-group {
-    margin-bottom: 11px;
-}
-
+.control-group { margin-bottom: 11px; }
 .control-group label {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
     color: var(--text-muted);
-    margin-bottom: 1px;
+    margin-bottom: 3px;
     font-weight: 500;
 }
+.val-display { color: var(--accent-hover); font-family: monospace; font-size: 13px; font-weight: bold; }
 
-.val-display {
-    color: var(--accent-hover);
-    font-family: monospace;
-    font-size: 13px;
-    font-weight: bold;
-}
-
-/* Personalizzazione Slider Hardware-Style */
+/* HARDWARE-SLIDER CUSTOMIZZATI */
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
     height: 6px;
-    background: var(--bg-main);
+    background: #111;
     border-radius: 5px;
     outline: none;
-    transition: background 0.3s;
 }
-
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -321,64 +408,207 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid var(--text-main);
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+    border: 2px solid var(--text-primary);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
     transition: transform 0.1s, background-color 0.2s;
 }
+input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover); transform: scale(1.2); }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-    background: var(--accent-hover);
-    transform: scale(1.2);
-}
-
-/* Lista dei cantanti all'interno del pannello */
+/* LISTA INTERNA DEI CANTANTI */
+#singerList { list-style: none; padding: 0; margin: 0; }
 #singerList li {
-    position: relative;
-    z-index: 2; /* LE RIGHE REALI STANNO SOPRA */
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 10px;
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
+    background: var(--bg-base);
+    border: 1px solid var(--border-main);
     margin-bottom: 5px;
     border-radius: 6px;
     font-size: 13px;
 }
 
+.panel-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 /* ==========================================================================
-   5. ZONA CINEMA PLAYER (Destra)
+   5. RIGHT CONTENT VIEWPORT (CINEMA PLAYER + GRIGLIA VIDEO SOTTO)
    ========================================================================== */
-#player-zone {
+#content-area {
     flex-grow: 1;
+    height: 100%;
+    overflow-y: auto; /* Scorrimento verticale per raggiungere la griglia */
+    overflow-x: hidden;
+    padding: 0 0 40px 0; /* 0 ai lati così il video tocca i bordi, spazio comodo solo in fondo */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    background-color: var(--bg-base);
+}
+
+
+/* PLAYER CINEMATOGRAFICO AD ALTA VISIBILITÀ */
+#riquadro-player-cyber {
+    width: 100%;
+    max-width: 100%;
+    height: 80vh; /* Cinema Mode: il player domina la scena dall'alto */
+    background: #000000;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0; /* Forza l'altezza costante impedendo compressioni */
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+
+#vid, #player-placeholder {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: none;
+    object-fit: contain; /* Mantiene rigorosamente le proporzioni native 16:9 senza distorcere */
+}
+
+#vid {
+    object-fit: fill;   /* ◄ OPZIONE A: Stira e allarga il video a tutto schermo, addio bande nere! */
+    /* object-fit: cover; */    /* ◄ OPZIONE B: Zooma proporzionalmente fino a toccare i lati (taglia sopra/sotto) */
+}
+
+#player-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    background: var(--bg-main);      /* Sfondo coerente con il tema */
-    border-radius: var(--radius);    /* Arrotondamento moderno */
-    box-shadow: var(--shadow);       /* Ombra neon tech */
-    border: 1px solid var(--border-color);
-    position: relative;
+    color: #555555;
+    background: #000;
+    gap: 8px;
 }
 
-/* Video Player */
-#vid {
+#fillerPlayer { display: none; } /* Player audio nascosto */
+
+/* ==========================================================================
+   6. SEZIONE TRACCE: GRIGLIA DELLE COPERTINE (STYLE YOUTUBE DIGITALE)
+   ========================================================================== */
+#video-grid-section {
     width: 100%;
-    max-width: 98vw;
-    height: 100%;
-    max-height: 98vh;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    outline: none;
-    object-fit: contain;   /* Mantiene proporzioni perfette */
+    padding: 0 32px; /* Ridiamo il padding rimosso per allineare la griglia */
+    box-sizing: border-box;
 }
 
+#video-grid-section h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
 
-/* Nascondiamo il player audio filler di fondo */
-#fillerPlayer {
-    display: none;
+/* Responsive Grid Nativa e Autofluidificata */
+#myUL {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Colonne dinamiche perfette */
+    gap: 20px;
+    padding: 0;
+}
+
+/* La singola Card del video */
+#myUL li {
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* STRUTTURA COPERTINA MINIATURA (Forza il 16:9 perfetto) */
+#myUL li .traccia-copertina-wrapper,
+#myUL li .thumbnail-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9; /* Geometria esatta delle miniature YouTube */
+    background-color: #272727;
+    border-radius: 12px; /* Angoli stondati moderni delle copertine correnti */
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: var(--text-secondary);
+}
+
+/* L'immagine dentro la copertina si adatta senza deformarsi */
+#myUL li .traccia-copertina-wrapper img,
+#myUL li .thumbnail-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Riempie il box ritagliandosi proporzionalmente */
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+/* Effetto Zoom fluido sulla copertina al passaggio del mouse */
+#myUL li:hover .traccia-copertina-wrapper img,
+#myUL li:hover .thumbnail-wrapper img {
+    transform: scale(1.04);
+}
+
+/* INFORMAZIONI, TITOLI E SOTTOTITOLI DELLA CANZONE */
+.video-info { display: flex; gap: 10px; padding: 0 4px; }
+.video-details { display: flex; flex-direction: column; gap: 2px; }
+
+.video-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Taglia ordinatamente il testo se supera la seconda riga */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.video-metadata { font-size: 12px; color: var(--text-secondary); }
+
+/* EVIDENZIAZIONE RICERCA (Giallo ad alto contrasto) */
+.highlight {
+    background-color: var(--bg-search) !important;
+    color: var(--text-search) !important;
+    padding: 0 2px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* CANZONE ATTUALMENTE IN ESECUZIONE (Bordo Rosso Neon Live) */
+#myUL li.active .traccia-copertina-wrapper,
+#myUL li.active .thumbnail-wrapper {
+    outline: 3px solid var(--accent-red) !important;
+    outline-offset: 3px;
+}
+
+#myUL li.active .video-title {
+    color: #ff4444;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   7. CUSTOM SCROLLBARS E UTILITY
+   ========================================================================== */
+#content-area::-webkit-scrollbar,
+.sidebar-scrollable-content::-webkit-scrollbar,
+.panel-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+#content-area::-webkit-scrollbar-thumb,
+.sidebar-scrollable-content::-webkit-scrollbar-thumb,
+.panel-scroll::-webkit-scrollbar-thumb {
+    background: #3f3f3f;
+    border-radius: 4px;
+}
+#content-area::-webkit-scrollbar-thumb:hover,
+.sidebar-scrollable-content::-webkit-scrollbar-thumb:hover,
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

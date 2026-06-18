@@ -13,18 +13,18 @@ async function controlFiller(action) {
     // Assicura che l'audio sia collegato al mixer prima di suonare
     await setupAudio();
 
-    if (window.karaoke.players.video.src && !window.karaoke.players.video.paused && !window.karaoke.players.video.ended) {
+    if (window.yto.players.video.src && !window.yto.players.video.paused && !window.yto.players.video.ended) {
         return;
     }
 
-    if (!hasValidAudio(window.karaoke.players.sound)) return;
+    if (!hasValidAudio(window.yto.players.sound)) return;
 
     if (action === 'play') {
-        fadeIn(window.karaoke.players.sound, 1.5);
+        fadeIn(window.yto.players.sound, 1.5);
         if (btnPlay) btnPlay.classList.add('btn-filler-active-play');
         if (btnStop) btnStop.classList.remove('btn-filler-active-stop');
     } else {
-        fadeOut(window.karaoke.players.sound, 1.5);
+        fadeOut(window.yto.players.sound, 1.5);
         if (btnStop) btnStop.classList.add('btn-filler-active-stop');
         if (btnPlay) btnPlay.classList.remove('btn-filler-active-play');
     }
@@ -44,23 +44,23 @@ async function loadSingleFiller(input) {
         await setupAudio();
 
         // Forza lo stato del tag audio HTML
-        window.karaoke.players.sound.muted = false;
-        window.karaoke.players.sound.volume = 1;
+        window.yto.players.sound.muted = false;
+        window.yto.players.sound.volume = 1;
 
-        fadeOut(window.karaoke.players.sound, 1);
+        fadeOut(window.yto.players.sound, 1);
 
         setTimeout(() => {
             const url = URL.createObjectURL(file);
-            window.karaoke.players.sound.src = url;
+            window.yto.players.sound.src = url;
             if (fillerTitle) fillerTitle.value = file.name;
 
-            if (window.karaoke.players.video.src && !window.karaoke.players.video.paused && !window.karaoke.players.video.ended) {
-                window.karaoke.players.sound.volume = 0;
-                window.karaoke.players.sound.pause();
+            if (window.yto.players.video.src && !window.yto.players.video.paused && !window.yto.players.video.ended) {
+                window.yto.players.sound.volume = 0;
+                window.yto.players.sound.pause();
                 return;
             }
 
-            fadeIn(window.karaoke.players.sound, 2);
+            fadeIn(window.yto.players.sound, 2);
 
             const btnPlay = document.getElementById('btn-filler-play');
             const btnStop = document.getElementById('btn-filler-stop');
@@ -79,12 +79,12 @@ async function loadSingleFiller(input) {
         }
 
         // Pulizia audio totale
-        if (window.karaoke.players.sound) {
-            window.karaoke.players.sound.pause();
-            window.karaoke.players.sound.onplay = null;
-            window.karaoke.players.sound.oncanplay = null;
-            window.karaoke.players.sound.src = ""; 
-            window.karaoke.players.sound.load();   
+        if (window.yto.players.sound) {
+            window.yto.players.sound.pause();
+            window.yto.players.sound.onplay = null;
+            window.yto.players.sound.oncanplay = null;
+            window.yto.players.sound.src = ""; 
+            window.yto.players.sound.load();   
         }
 
         // Reset visivo dei pulsanti

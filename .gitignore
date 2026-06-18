@@ -1,3 +1,11 @@
-bin/
-node_modules/
+# Cartelle dei contenuti multimediali (pesanti e personali)
 songs/
+bin/
+# File di sistema e cache di NW.js / Chromium
+.nw/
+node_modules/
+package-lock.json
+*.log
+# File temporanei di Windows
+Thumbs.db
+Desktop.ini
