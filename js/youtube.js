@@ -123,11 +123,22 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
 
     ytDlpWrap.exec(argomenti)
     .on('progress', (progress) => {
-        const percentuale = Math.round(progress.percent) || 0; 
+        // Estraiamo la percentuale in modo solido
+        let percentuale = 0;
+        if (progress && progress.percent !== undefined) {
+            percentuale = Math.round(progress.percent);
+        } else if (progress && progress._percent_str) {
+            // Fallback se yt-dlp passa la stringa pulita dal template
+            percentuale = Math.round(parseFloat(progress._percent_str)) || 0;
+        }
         
+        if (percentuale > 100) percentuale = 100;
+        if (percentuale < 0 || isNaN(percentuale)) percentuale = 0;
+        
+        // 1. Aggiorna il testo globale
         if (notificaUI) notificaUI.innerText = `📥 Scaricamento: ${percentuale}%`;
 
-        // 🎯 AGGIORNAMENTO CARD IN TEMPO REALE
+        // 2. AGGIORNAMENTO CARD IN TEMPO REALE
         const cardInDownload = document.querySelector(`#myUL li[data-url="${urlVideo}"]`);
         if (cardInDownload) {
             cardInDownload.classList.add("is-downloading");
