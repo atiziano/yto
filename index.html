@@ -21,7 +21,11 @@
         
         <div class="top-center">
             <div class="search-box-wrapper">
-                <input type="text" id="myInput" onkeyup="filter()" placeholder="Cerca in locale o su YouTube..." autofocus>
+                <label class="upload-btn" title="Carica Intera Cartella">
+                    📁
+                    <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
+                </label>
+                <input type="text" id="myInput" onfocus="this.select()" onkeyup="filter()" placeholder="Cerca in locale o su YouTube..." autofocus>
                 <select id="quantita-risultati" class="search-select" title="Numero di risultati">
                     <option value="5" selected>5 risultati (Veloce)</option>
                     <option value="10">10 risultati (Normale)</option>
@@ -38,10 +42,6 @@
         <div class="top-right" style="position: relative;">
             
             <div class="filler-row">
-                <label class="upload-btn" title="Carica Intera Cartella">
-                    📁
-                    <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
-                </label>
                 <button class="mini-btn" title="Mostra player" onclick="mostraPlayer()">📺</button>
                 <button class="mini-btn" id="btn-console" title="Apre la console (Click destro per Manutenzione)" onclick="apriConsoleWebview()">🛠️</button>
             </div>
@@ -80,14 +80,12 @@
                 <div class="sidebar-section">
                     <h4 class="section-title">Sottofondo Musicale</h4>
                     <div class="filler-row">
-                        <input type="text" id="fillerTitle" placeholder="Seleziona MP3..." readonly>
-                        <label class="mini-btn" title="Sfoglia">
+                        <label class="mini-btn" title="Seleziona mp3 di sottofondo">
                             📁 <input type="file" accept="audio/*,video/mp4" onchange="loadSingleFiller(this)" style="display:none;">
                         </label>
-                    </div>
-                    <div class="filler-row">
-                        <button id="btn-filler-play" class="mini-btn" onclick="controlFiller('play')">▶</button>
-                        <button id="btn-filler-stop" class="mini-btn" onclick="controlFiller('stop')">⏹</button>
+                        <input type="text" id="fillerTitle" placeholder="Nessuno..." readonly>
+                        <button id="btn-filler-play" class="mini-btn" title="Avvia sottofondo" onclick="controlFiller('play')">▶</button>
+                        <button id="btn-filler-stop" class="mini-btn" title="Ferma sottofondo" onclick="controlFiller('stop')">⏹</button>
                     </div>
                 </div>
             </div>

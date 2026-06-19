@@ -127,20 +127,8 @@ function sliderDbToLinearValue(db) {
  * @param {Array} risultati - Array di oggetti video restituiti da yt-dlp
  */
 function aggiornaInterfacciaRicerca(risultati) {
-    if (!window.yto) window.yto = {};
-    if (!window.yto.databaseBasi) window.yto.databaseBasi = [];
-
-    // 1. Eliminiamo i vecchi risultati di YouTube precedenti dal database per fare spazio ai nuovi
-    window.yto.databaseBasi = window.yto.databaseBasi.filter(b => b.tipo !== 'youtube');
-
-    // Array temporaneo di supporto per isolare la vista corrente
-    const soloNuoviRisultatiYouTube = [];
-
-    // 2. Inseriamo i nuovi risultati di YouTube nel database generale
-    risultati.forEach(video => {
+    const tracceNormalizzate = risultati.map(video => {
         const urlCompleto = video.url || `https://www.youtube.com/watch?v=${video.id}`;
-        
-        // Recuperiamo la miniatura migliore o quella di fallback
         let urlAnteprima = '';
         if (video.thumbnail) {
             urlAnteprima = video.thumbnail;
@@ -148,27 +136,17 @@ function aggiornaInterfacciaRicerca(risultati) {
             urlAnteprima = video.thumbnails[video.thumbnails.length - 1].url;
         }
 
-        const nuovoVideoYT = {
-            tipo: 'youtube', // Manteniamo la tua marcatura 'youtube'
+        return {
+            tipo: 'youtube',
+            nomeFile: '', 
             titolo: video.title || "Traccia streaming",
-            pathCompleto: urlCompleto, // L'URL completo che verrà digerito dalla funzione play()
+            pathCompleto: urlCompleto,
             copertina: urlAnteprima,
             canale: video.uploader || video.channel || "YouTube Streaming"
         };
-
-        // Li mettiamo nel database globale in memoria
-        window.yto.databaseBasi.push(nuovoVideoYT);
-        
-        // Li salviamo anche nell'array temporaneo per la visualizzazione immediata
-        soloNuoviRisultatiYouTube.push(nuovoVideoYT);
     });
 
-    // 3. Mostriamo a schermo SOLO i risultati di YouTube appena cercati
-    console.log(`📺 [YouTube-Search] Mostro ${soloNuoviRisultatiYouTube.length} risultati online nella griglia.`);
-    mostraInGriglia(soloNuoviRisultatiYouTube);
-    
-    if (typeof updateStat === 'function') updateStat();
+    // 🎯 FIX: rimosso il refuso "traccie..." con la i
+    aggiungiTracceAlDatabase(tracceNormalizzate);
 }
-
-// Esposizione globale per consentire a avviaRicercaOnline di trovarla
 window.aggiornaInterfacciaRicerca = aggiornaInterfacciaRicerca;

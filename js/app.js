@@ -168,24 +168,46 @@ function mostraInGriglia(arrayBasi) {
         
         li.setAttribute('data-name', base.titolo || '');
         
-        // Gestione classe download in corso
-        if (base.tipo === 'locale' && !base.pathCompleto) {
-            li.classList.add("is-downloading");
+        li.setAttribute('data-url', base.pathCompleto || ''); // Permette al progresso di trovare la card
+
+        // 1. Assegnazione classi di stato e sorgente (per l'opacità via CSS)
+        if (base.tipo === 'locale') {
+            li.classList.add("is-local");
+            if (!base.pathCompleto) li.classList.add("is-downloading");
         }
         
+        if (base.tipo === 'youtube') {
+            li.classList.add("is-youtube"); 
+        }
+        
+        // 2. Definizione dei badge sovrapposti e delle icone di fallback
+        let badgeSorgente = "";
+        let fallbackIcona = "🎵";
+
+        if (base.tipo === 'youtube') {
+            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:10; user-select:none;">🌐 YT</div>`;
+            fallbackIcona = "🌐";
+        } else if (base.tipo === 'locale') {
+            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(34,197,94,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:10; user-select:none;">📁 PC</div>`;
+            fallbackIcona = !base.pathCompleto ? '📥' : '🎵';
+        }
+        
+        // 3. Generazione dell'HTML della card
         li.innerHTML = `
             <div class="thumb-wrapper" style="position:relative; width:100%; aspect-ratio:16/9; overflow:hidden;">
+                ${badgeSorgente}
                 ${base.copertina ? 
                     `<img src="${base.copertina}" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">` : 
-                    `<div class="placeholder-thumb" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">${!base.pathCompleto ? '📥' : '🎵'}</div>`
+                    `<div class="placeholder-thumb" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#1e1e2e; font-size:2rem;">${fallbackIcona}</div>`
                 }
             </div>
-            <div class="song-info">
+            <div class="song-info" style="position:relative;">
                 <h4 title="${base.titolo}">${base.titolo}</h4>
+                ${base.canale ? `<small style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">${base.canale}</small>` : ''}
             </div>
         `;
         
-        // Evento click per avviare la riproduzione
+        // 4. Gestione dell'evento click (Invariata)
         li.onclick = () => {
             if (base.tipo === 'locale' && !base.pathCompleto) return;
             if (typeof play === 'function') {
@@ -410,6 +432,35 @@ del "%~f0"
         console.error("❌ Errore updater core:", e);
         alert("Impossibile completare l'operazione.");
     }
+}
+
+/**
+ * Motore unico di memorizzazione e rendering.
+ * Fonde qualsiasi traccia (locale o YouTube) nel database globale.
+ * @param {Array} tracceDaInserire - Array di oggetti traccia standardizzati
+ */
+window.aggiungiTracceAlDatabase = function (tracceDaInserire) {
+    if (!window.yto) window.yto = {};
+    if (!window.yto.databaseBasi) window.yto.databaseBasi = [];
+
+    tracceDaInserire.forEach(traccia => {
+        // Controllo anti-duplicato universale (usa il pathCompleto come chiave unica)
+        const giaPresente = window.yto.databaseBasi.some(base => base.pathCompleto === traccia.pathCompleto);
+        
+        if (!giaPresente) {
+            window.yto.databaseBasi.push(traccia);
+        }
+    });
+
+    // Ordina tutto alfabeticamente per titolo (sia locali che YouTube mischiati)
+    window.yto.databaseBasi.sort((a, b) => a.titolo.localeCompare(b.titolo));
+
+    // Renderizza l'intero database unificato
+    mostraInGriglia(window.yto.databaseBasi);
+
+    // Aggiorna contatori e filtri attivi
+    if (typeof updateStat === "function") updateStat();
+    if (typeof filter === "function") filter();
 }
 
 // Avvio rapido non appena la struttura del DOM è pronta

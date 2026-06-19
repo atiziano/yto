@@ -11,7 +11,6 @@ async function play(fileUrl, el) {
 
     mostraPlayer();
     
-    const videoPlayer = document.getElementById('vid');
     const placeholder = document.getElementById('player-placeholder');
     const btnPlay = document.getElementById('btn-filler-play');
     const btnStop = document.getElementById('btn-filler-stop');
@@ -71,7 +70,7 @@ async function play(fileUrl, el) {
             if (window.yto.audio.isSetup && fillerNode) {
                 fillerNode.volume.rampTo(-100, 1.5);
             }
-            fadeIn(videoPlayer, 1.5, 1);
+            fadeIn(window.yto.players.video, 1.5, 1);
             console.log("🚀 [Mixer] Streaming YouTube avviato nel player locale!");
         } catch (e) {
             console.warn("⚠️ Impossibile avviare lo streaming locale in automatico:", e);
@@ -122,7 +121,7 @@ async function play(fileUrl, el) {
             if (window.yto.audio.isSetup && fillerNode) {
                 fillerNode.volume.rampTo(-100, 1.5);
             }
-            fadeIn(videoPlayer, 1.5, 1);
+            fadeIn(window.yto.players.video, 1.5, 1);
             console.log("✅ Riproduzione video locale avviata con successo!");
         } catch (e) {
             console.warn("⚠️ Impossibile avviare il video locale in automatico:", e);
@@ -134,8 +133,7 @@ async function play(fileUrl, el) {
  * Gestisce la fine del brano e riattiva il sottofondo
  */
 async function handleVideoEnd() {
-    const videoPlayer = document.getElementById('vid');
-    const soundPlayer = document.getElementById('suono');
+
     const btnPlay = document.getElementById('btn-filler-play');
     const btnStop = document.getElementById('btn-filler-stop');
 
@@ -170,13 +168,13 @@ async function handleVideoEnd() {
             await window.yto.players.sound.play();
             console.log("▶️ Riproduzione tag audio avviata");
             fadeIn(window.yto.players.sound, 2.5, 1);
-            console.log("🔊 Volume soundPlayer impostato a 0dB");
+            console.log("🔊 Volume player impostato a 0dB");
         } catch (e) {
             console.error("❌ Errore play tag audio:", e);
         }
     }
     else {
-        console.warn("⚠️ soundPlayer non definito!");
+        console.warn("⚠️ sound Player non definito!");
     }
 }
 

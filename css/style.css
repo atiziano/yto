@@ -282,7 +282,16 @@ body {
     display: flex;
     gap: 4px;
     align-items: center;
+    width: 100%;         /* Prende esattamente la larghezza del padre */
+    box-sizing: border-box; /* Include padding e bordi nel calcolo della larghezza */
 }
+
+/* 🎯 Regola fondamentale per i figli diretti (icone, bottoni, testi) */
+.filler-row > * {
+    flex-shrink: 1;      /* Forza gli elementi a rimpicciolirsi se lo spazio non basta */
+    min-width: 0;        /* Sblocca il limite rigido di Flexbox, permettendo il ridimensionamento reale */
+}
+
 .filler-row input {
     flex: 1;
     background: var(--bg-input);
@@ -553,6 +562,37 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 #myUL li:hover .traccia-copertina-wrapper img,
 #myUL li:hover .thumbnail-wrapper img {
     transform: scale(1.04);
+}
+
+/* Le tracce locali rimangono sempre visibili al massimo */
+#myUL li.is-local {
+    opacity: 1;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 🌐 Le tracce di YouTube partono più opache (es. al 55%) per mostrare che sono "in cloud" */
+#myUL li.is-youtube {
+    opacity: 0.45;
+    filter: grayscale(20%); /* Opzionale: spegne leggermente anche i colori */
+    transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+}
+
+/* Quando l'utente passa il mouse sopra una traccia di YouTube, si illumina del tutto */
+#myUL li.is-youtube:hover {
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+/* Quando la card di YouTube è in fase di download, pulsa! */
+#myUL li.is-youtube.is-downloading {
+    opacity: 0.85; /* Diventa più visibile rispetto alle altre di YT */
+    animation: pulseDownload 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseDownload {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.98); opacity: 0.6; }
+    100% { transform: scale(1); }
 }
 
 /* INFORMAZIONI, TITOLI E SOTTOTITOLI DELLA CANZONE */

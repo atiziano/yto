@@ -6,6 +6,10 @@
  * Scansiona una cartella qualsiasi tramite Node.js e popola la griglia.
  * @param {string} percorsoAssoluto - Il percorso della cartella da leggere
  */
+/**
+ * Scansiona una cartella locale, estrae i video e le copertine,
+ * e passa i dati normalizzati al motore centrale.
+ */
 function caricaCartellaLocale(percorsoAssoluto) {
     if (!fs.existsSync(percorsoAssoluto)) {
         fs.mkdirSync(percorsoAssoluto, { recursive: true });
@@ -14,18 +18,14 @@ function caricaCartellaLocale(percorsoAssoluto) {
     console.log("📂 [Core-Loader] Scansione cartella in corso:", percorsoAssoluto);
 
     // ==========================================================================
-    // 🚀 LOGICA DI MEMORIZZAZIONE DIFENSIVA DELLE CARTELLE
+    // 🚀 LOGICA DI MEMORIZZAZIONE DIFENSIVA DELLE CARTELLE (Invariata)
     // ==========================================================================
     try {
-        // 1. Recupera la stringa dal localStorage, se non esiste parte con un array vuoto "[]"
         const cartelleSalvateRaw = localStorage.getItem('yto_cartelle_locali') || "[]";
         let listaCartelle = JSON.parse(cartelleSalvateRaw);
 
-        // 2. Aggiunge il percorso corrente alla lista solo se non è già presente
         if (!listaCartelle.includes(percorsoAssoluto)) {
             listaCartelle.push(percorsoAssoluto);
-            
-            // 3. Risalva l'array aggiornato nel localStorage convertito in stringa
             localStorage.setItem('yto_cartelle_locali', JSON.stringify(listaCartelle));
             console.log("💾 [Storage] Percorso cartella memorizzato con successo:", percorsoAssoluto);
         }
@@ -51,10 +51,8 @@ function caricaCartellaLocale(percorsoAssoluto) {
             mappaCopertine[nomePuro] = 'file:///' + pathAssolutoImg.replace(/\\/g, '/'); 
         });
 
-        // Inizializza l'oggetto e l'array globale SOLO se non esistono ancora
-        if (!window.yto) window.yto = {};
-        if (!window.yto.databaseBasi) window.yto.databaseBasi = [];
-
+        // Array temporaneo di supporto per raccogliere le tracce locali di questa scansione
+        const tracceLocaliNormalizzate = [];
         const tracceMancantiDiCopertina = [];
 
         videoFiles.forEach(file => {
@@ -62,14 +60,6 @@ function caricaCartellaLocale(percorsoAssoluto) {
             const pathCompletoVideo = path.join(percorsoAssoluto, file);
             const urlVideoUniversale = 'file:///' + pathCompletoVideo.replace(/\\/g, '/');
             
-            // 🎯 CONTROLLO DI ESISTENZA: Verifica se questo file è già presente nel database
-            const giaPresente = window.yto.databaseBasi.some(base => base.pathCompleto === urlVideoUniversale);
-            
-            // Se il brano esiste già, saltiamo il push e passiamo al prossimo file
-            if (giaPresente) {
-                return; 
-            }
-
             let copertinaAssegnata = mappaCopertine[nomePuro];
 
             if (!copertinaAssegnata) {
@@ -80,8 +70,8 @@ function caricaCartellaLocale(percorsoAssoluto) {
                 });
             }
 
-            // Aggiunge il brano SOLO se ha superato il controllo di esistenza
-            window.yto.databaseBasi.push({
+            // Prepariamo l'oggetto nel formato standard condiviso
+            tracceLocaliNormalizzate.push({
                 tipo: 'locale',
                 nomeFile: file,
                 titolo: nomePuro,
@@ -90,16 +80,10 @@ function caricaCartellaLocale(percorsoAssoluto) {
             });
         });
 
-        // Ordina alfabeticamente
-        window.yto.databaseBasi.sort((a, b) => a.titolo.localeCompare(b.titolo));
+        // 🚀 PASSAGGIO AL MOTORE UNICO: Deleghiamo inserimento, ordinamento e rendering
+        aggiungiTracceAlDatabase(tracceLocaliNormalizzate);
         
-        // Renderizza usando il sovrano unico
-        mostraInGriglia(window.yto.databaseBasi);
-        
-        if (typeof updateStat === "function") updateStat();
-        if (typeof filter === "function") filter();
-        
-        // Coda download copertine
+        // Coda download copertine (Invariata)
         if (typeof eseguiCodaDownloadCopertine === "function" && tracceMancantiDiCopertina.length > 0) {
             const codaStandard = tracceMancantiDiCopertina.map(t => ({
                 titolo: t.titolo,
@@ -109,6 +93,9 @@ function caricaCartellaLocale(percorsoAssoluto) {
         }
     });
 }
+
+// Esposizione globale
+window.caricaCartellaLocale = caricaCartellaLocale;
 
 /**
  * Carica i file video selezionati e li mostra nella lista, ordinati alfabeticamente
@@ -253,9 +240,10 @@ function filter() {
     for (let i = 0; i < li.length; i++) {
         const item = li[i];
         
-        // Recuperiamo il nome originale ed eliminiamo l'estensione per il filtro pulito
-        let txt = item.getAttribute('data-name') || '';
-        txt = txt.replace(/\.mp4$/i, ''); 
+        // 🎯 FIX 1: Recuperiamo il titolo dall'attributo data-name. 
+        // Se non c'è (es. su YT), proviamo a prenderlo direttamente dal tag h4 interno.
+        let txt = item.getAttribute('data-name') || item.querySelector('h4')?.innerText || '';
+        txt = txt.replace(/\.mp4$/i, ''); // Elimina l'estensione per i file locali
         
         const txtUpper = txt.toUpperCase();
 
@@ -270,14 +258,14 @@ function filter() {
             if (h4Titolo) {
                 if (paroleCercate.length > 0) {
                     // Crea una regex che intercetta tutte le parole cercate separate da un "or" (|)
-                    const pattern = paroleCercate.map(p => escapeRegExp(p)).join('|');
+                    const pattern = paroleCercate.map(p => typeof escapeRegExp === 'function' ? escapeRegExp(p) : p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
                     const regex = new RegExp(`(${pattern})`, "gi");
                     
-                    // Evidenzia i match sul testo del titolo h4
-                    h4Titolo.innerHTML = txtPulito.replace(regex, "<span class='search-match'>$1</span>");
+                    // 🎯 FIX 2: Sostituito 'txtPulito' (che mandava in crash l'app) con 'txt'
+                    h4Titolo.innerHTML = txt.replace(regex, "<span class='search-match'>$1</span>");
                 } else {
                     // Se l'input è vuoto, ripristina il testo originale pulito senza tag
-                    h4Titolo.innerText = txtPulito;
+                    h4Titolo.innerText = txt;
                 }
             }
         } else {

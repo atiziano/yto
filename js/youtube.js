@@ -121,7 +121,31 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
 
     ytDlpWrap.exec(argomenti)
     .on('progress', (progress) => {
-        if (notificaUI) notificaUI.innerText = `📥 Download background: ${progress.percent}%`;
+
+        const percentuale = Math.round(progress.percent) || 0; 
+        
+        // 1. Aggiorna il testo globale (quello che avevi già)
+        if (notificaUI) notificaUI.innerText = `📥 Scaricamento: ${percentuale}%`;
+
+        // 2. 🎯 AGGIORNAMENTO CARD IN TEMPO REALE:
+        // Cerchiamo la card di YouTube nella griglia tramite l'URL che si sta scaricando
+        // (Dobbiamo aver salvato l'URL sul tag LI, vedi passaggio successivo!)
+        const cardInDownload = document.querySelector(`#myUL li[data-url="${urlVideo}"]`);
+        if (cardInDownload) {
+            // Aggiungiamo la classe per far capire al CSS che sta lavorando
+            cardInDownload.classList.add("is-downloading");
+            
+            // Troviamo il tag h4 o un piccolo contenitore per scriverci la percentuale
+            let badgePercentuale = cardInDownload.querySelector('.percentuale-card');
+            if (!badgePercentuale) {
+                // Se non esiste ancora il text-badge sulla card, lo creiamo al volo
+                badgePercentuale = document.createElement('span');
+                badgePercentuale.className = 'percentuale-card';
+                badgePercentuale.style = "position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fbbf24; padding:2px 4px; font-size:11px; border-radius:3px; font-weight:bold; z-index:11;";
+                cardInDownload.querySelector('.thumb-wrapper').appendChild(badgePercentuale);
+            }
+            badgePercentuale.innerText = `📥 ${percentuale}%`;
+        }
     })
     .on('error', (err) => {
         console.error(`❌ Errore download background per ${titoloLog}:`, err);
@@ -137,10 +161,16 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
             const pathFinaleDefinitivo = path.join(cartellaDestinazione, `${titoloPulito}.mp4`);
 
             if (fs.existsSync(vecchioTemp)) {
-                // 🎯 Rinomina e spostamento a bocce ferme! Zero WinError 32
+
                 fs.renameSync(vecchioTemp, pathFinaleDefinitivo);
                 console.log(`🚀 [COMPLETATO] File salvato e sbloccato: ${titoloPulito}.mp4`);
                 if (notificaUI) notificaUI.innerText = "📥 Download completato!";
+
+                // PASSA SIA L'URL ORIGINALE CHE IL PERCORSO MP4 DEFINITIVO
+                if (typeof trasformaTracciaInLocale === "function") {
+                    trasformaTracciaInLocale(urlVideo, pathFinaleDefinitivo);
+                }
+
             } else {
                 throw new Error("File temporaneo non trovato al termine del processo.");
             }
@@ -153,6 +183,44 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
         if (typeof scanSongs === 'function') scanSongs();
     });
 }
+
+/**
+ * Trasforma una traccia in memoria da risorsa remota a file locale
+ * @param {string} urlYouTube - L'URL di YouTube usato per la ricerca
+ * @param {string} pathLocaleAssoluto - Il percorso completo (es. C:\cartella\brano.mp4)
+ */
+function trasformaTracciaInLocale(urlYouTube, pathLocaleAssoluto) {
+    if (!window.yto || !window.yto.databaseBasi) return;
+
+    // 1. Cerchiamo la traccia nel database unificato usando l'URL di YouTube come chiave
+    const traccia = window.yto.databaseBasi.find(base => base.pathCompleto === urlYouTube);
+
+    if (traccia) {
+        console.log(`💾 [Database-Unificato] Converto in locale: "${traccia.titolo}"`);
+
+        // 2. Cambiamo il passaporto alla traccia
+        traccia.tipo = 'locale';
+        
+        // 3. Trasformiamo il percorso nativo in URL universale per il tag <video>
+        traccia.pathCompleto = 'file:///' + pathLocaleAssoluto.replace(/\\/g, '/');
+
+        // 4. Estraiamo il nome del file con estensione (isolerà "nome_canone.mp4")
+        // Usiamo un replace per evitare crash se 'path' globale di Node non fosse visibile in questo file
+        traccia.nomeFile = pathLocaleAssoluto.replace(/^.*[\\\/]/, '');
+
+        // 5. Rigeneriamo la griglia visiva (applicherà opacità 1 e badge PC verde)
+        mostraInGriglia(window.yto.databaseBasi);
+        
+        // Aggiorna filtri attivi e contatori
+        if (typeof filter === "function") filter();
+        else if (typeof updateStat === "function") updateStat();
+    } else {
+        console.warn(`⚠️ [Database-Unificato] Impossibile trovare l'URL ${urlYouTube} nel database corrente.`);
+    }
+}
+
+// Esposizione per NW.js
+window.trasformaTracciaInLocale = trasformaTracciaInLocale;
 
 function cercaSuYouTubeNW(query, limite = 5) {
     if (!query) return;
