@@ -124,102 +124,106 @@ async function eseguiCodaDownloadCopertine(cartella, listaTracce) {
         if (!conferma) return;
     }
 
-    if (!fs.existsSync(percorsoYtdlp)) {
-        console.error(`❌ [Errore] yt-dlp.exe non trovato in: ${percorsoYtdlp}`);
-        return;
-    }
-
-    const percorsoTempIniziale = path.join(process.cwd(), 'bin', 'yt', 'temp_thumb');
     const cartellaBin = path.join(process.cwd(), 'bin', 'yt');
+    const https = require('https');
+
+    console.log(`🔍 [Init Copertine] Controllo di ${totaleTracce} tracce in corso...`);
 
     for (let i = 0; i < totaleTracce; i++) {
         const traccia = listaTracce[i];
         
         try {
-            let titoloCercaYT = traccia.titolo.replace(/[\(\)\[\]]/g, "").trim();
-            const estensioniPossibili = ['.jpg', '.webp', '.png', '.jpeg'];
-
-            let comando = "";
-            if (traccia.soloCopertina === false) {
-                console.log(`%c   ▶ [Download Completo] Video + Cover per: "${traccia.titolo}"`, "color: #38bdf8;");
-                // Proteggiamo i percorsi con le virgolette per evitare i crash di Windows
-                const fileUscitaPattern = path.join(cartella, `${traccia.titolo}.%(ext)s`);
-                comando = `"${percorsoYtdlp}" "${traccia.urlYt}" -f "mp4" --write-thumbnail --convert-thumbnails jpg --ffmpeg-location "${cartellaBin}" --no-check-certificates --extractor-args "youtube:player_client=android" -o "${fileUscitaPattern}"`;
-            } else {
-                // Svuotiamo i vecchi file temporanei
-                estensioniPossibili.forEach(est => {
-                    const vecchioTemp = `${percorsoTempIniziale}${est}`;
-                    if (fs.existsSync(vecchioTemp)) fs.unlinkSync(vecchioTemp);
-                });
-                comando = `"${percorsoYtdlp}" "ytsearch1:${titoloCercaYT}" --skip-download --write-thumbnail --no-check-certificates --extractor-args "youtube:player_client=android" -o "${percorsoTempIniziale}.%(ext)s"`;
-            }
-
-            // Eseguiamo il comando di yt-dlp
-            await new Promise((resolve, reject) => {
-                exec(comando, (error) => {
-                    if (error) return reject(error);
-                    resolve();
-                });
-            });
-
+            let titoloCercaYT = traccia.titolo;
+            const percorsoDestinazioneJpg = path.join(cartella, `${traccia.titolo}.jpg`);
             let urlImmagineCruco = '';
+            let videoId = null;
 
-            if (traccia.soloCopertina === false) {
-                // Cerchiamo la copertina reale appena creata insieme al video
-                for (const est of estensioniPossibili) {
-                    const verificaCoverFinale = path.join(cartella, `${traccia.titolo}${est}`);
-                    if (fs.existsSync(verificaCoverFinale)) {
-                        urlImmagineCruco = 'file:///' + verificaCoverFinale.replace(/\\/g, '/');
-                        break;
-                    }
-                }
-            } else {
-                // Gestione del file temporaneo spostato per l'init
-                let fileTemporaneoTrovato = null;
-                let estensioneTrovata = '';
+            // STRATEGIA 1: Proviamo a prendere l'ID dall'URL se esiste
+            if (traccia.urlYt) {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = traccia.urlYt.match(regExp);
+                if (match && match[2].length === 11) videoId = match[2];
+            }
 
-                for (const est of estensioniPossibili) {
-                    const verificaTemp = `${percorsoTempIniziale}${est}`;
-                    if (fs.existsSync(verificaTemp)) {
-                        fileTemporaneoTrovato = verificaTemp;
-                        estensioneTrovata = est;
-                        break;
-                    }
-                }
+            // STRATEGIA 2: Se non c'è l'URL, usiamo yt-dlp al volo SOLO per farci dare l'ID del video su YouTube!
+            if (!videoId && fs.existsSync(percorsoYtdlp)) {
+                
+                // 🎯 Ottimizziamo la query solo per YouTube per cercare la copertina dell'album ufficiale
+                const queryOttimizzata = `${titoloCercaYT}`;
 
-                if (fileTemporaneoTrovato) {
-                    const percorsoDestinazioneFinale = path.join(cartella, `${traccia.titolo}${estensioneTrovata}`);
-                    fs.renameSync(fileTemporaneoTrovato, percorsoDestinazioneFinale);
-                    urlImmagineCruco = 'file:///' + percorsoDestinazioneFinale.replace(/\\/g, '/');
+                await new Promise((resolve) => {
+                    // Chiediamo a yt-dlp solo l'ID usando --get-id con la queryOttimizzata, è velocissimo
+                    const comandoId = `"${percorsoYtdlp}" "ytsearch1:${queryOttimizzata}" --get-id --no-check-certificates --extractor-args "youtube:player_client=android"`;
+                    
+                    exec(comandoId, (error, stdout) => {
+                        if (!error && stdout) {
+                            const idEstratto = stdout.trim();
+                            // YouTube restituisce l'ID pulito di 11 caratteri (se ci sono caratteri strani o spazi, saltiamo)
+                            if (idEstratto.length === 11 && !idEstratto.includes(" ")) {
+                                videoId = idEstratto;
+                            }
+                        }
+                        resolve();
+                    });
+                });
+            }
+
+            // 🎯 ORA CHE ABBIAMO L'ID (da URL o da Ricerca), SCARICHIAMO IL JPG NATIVO VIA HTTPS
+            if (videoId) {
+                const urlCoverJpg = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                
+                await new Promise((resolve) => {
+                    const fileStream = fs.createWriteStream(percorsoDestinazioneJpg);
+                    https.get(urlCoverJpg, (response) => {
+                        response.pipe(fileStream);
+                        fileStream.on('finish', () => {
+                            fileStream.close();
+                            urlImmagineCruco = 'file:///' + percorsoDestinazioneJpg.replace(/\\/g, '/');
+                            console.log(`📸 [Copertina JPG] Salvata con successo: ${traccia.titolo}.jpg`);
+                            resolve();
+                        });
+                    }).on('error', (err) => {
+                        console.error(`❌ Errore download HTTPS per ${traccia.titolo}:`, err);
+                        resolve();
+                    });
+                });
+            } else if (traccia.soloCopertina === false && fs.existsSync(percorsoYtdlp)) {
+                // Sotto-caso: Se è un download video completo richiesto esplicitamente, usiamo il comando classico
+                const fileUscitaPattern = path.join(cartella, `${traccia.titolo}.%(ext)s`);
+                const comandoCompleto = `"${percorsoYtdlp}" "${traccia.urlYt}" -f "mp4" --write-thumbnail --convert-thumbnails jpg --ffmpeg-location "${cartellaBin}" --no-check-certificates --extractor-args "youtube:player_client=android" -o "${fileUscitaPattern}"`;
+                
+                await new Promise((resolve) => {
+                    exec(comandoCompleto, () => resolve());
+                });
+
+                if (fs.existsSync(percorsoDestinazioneJpg)) {
+                    urlImmagineCruco = 'file:///' + percorsoDestinazioneJpg.replace(/\\/g, '/');
                 }
             }
 
-            // Aggiorniamo la memoria globale dell'applicazione
+            // Aggiorniamo la memoria dell'applicazione
             const baseInMemoria = window.yto.databaseBasi.find(b => b.titolo === traccia.titolo && b.tipo === 'locale');
-
-            if (baseInMemoria) {
+            if (baseInMemoria && urlImmagineCruco) {
                 baseInMemoria.copertina = urlImmagineCruco;
-                
                 if (traccia.soloCopertina === false) {
                     baseInMemoria.nomeFile = `${traccia.titolo}.mp4`;
                     baseInMemoria.pathCompleto = path.join(cartella, `${traccia.titolo}.mp4`);
                 }
             }
 
-            // Rinfresca l'interfaccia
+            // Aggiorniamo l'interfaccia ogni 5 elementi o all'ultimo per non appesantire NW.js
             if (typeof mostraInGriglia === "function") {
-                // Se stiamo scaricando attivamente, isoliamo la card; se è l'init iniziale mostriamo tutto
                 if (traccia.soloCopertina === false) {
                     mostraInGriglia([baseInMemoria].filter(Boolean));
-                } else {
+                } else if (i === totaleTracce - 1 || i % 5 === 0) {
                     mostraInGriglia(window.yto.databaseBasi);
                 }
             }
 
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 150));
 
         } catch (err) {
-            console.error(`❌ Errore nel ciclo di download per: "${traccia.titolo}"`, err);
+            console.error(`❌ Errore nel ciclo per: "${traccia.titolo}"`, err);
         }
     }
 }

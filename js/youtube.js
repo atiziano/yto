@@ -103,9 +103,11 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
     if (fs.existsSync(vecchioTemp)) fs.unlinkSync(vecchioTemp);
     if (fs.existsSync(vecchioTempPart)) fs.unlinkSync(vecchioTempPart);
 
+    // Usa il titolo reale della canzone nella notifica iniziale se disponibile!
+    if (notificaUI) notificaUI.innerText = `📥 Avvio download: ${titoloLog}...`;
     console.log(`📥 [Download Background] Avviato scaricamento sicuro per: ${titoloLog}`);
 
-    // Prepariamo i parametri usando i trucchi della funzione che funziona sempre
+    // Prepariamo i parametri - Rimossa la thumbnail da qui perché la gestiamo via HTTPS nel 'close'
     const argomenti = [
         urlVideo,
         '-f', 'mp4',
@@ -121,24 +123,17 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
 
     ytDlpWrap.exec(argomenti)
     .on('progress', (progress) => {
-
         const percentuale = Math.round(progress.percent) || 0; 
         
-        // 1. Aggiorna il testo globale (quello che avevi già)
         if (notificaUI) notificaUI.innerText = `📥 Scaricamento: ${percentuale}%`;
 
-        // 2. 🎯 AGGIORNAMENTO CARD IN TEMPO REALE:
-        // Cerchiamo la card di YouTube nella griglia tramite l'URL che si sta scaricando
-        // (Dobbiamo aver salvato l'URL sul tag LI, vedi passaggio successivo!)
+        // 🎯 AGGIORNAMENTO CARD IN TEMPO REALE
         const cardInDownload = document.querySelector(`#myUL li[data-url="${urlVideo}"]`);
         if (cardInDownload) {
-            // Aggiungiamo la classe per far capire al CSS che sta lavorando
             cardInDownload.classList.add("is-downloading");
             
-            // Troviamo il tag h4 o un piccolo contenitore per scriverci la percentuale
             let badgePercentuale = cardInDownload.querySelector('.percentuale-card');
             if (!badgePercentuale) {
-                // Se non esiste ancora il text-badge sulla card, lo creiamo al volo
                 badgePercentuale = document.createElement('span');
                 badgePercentuale.className = 'percentuale-card';
                 badgePercentuale.style = "position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fbbf24; padding:2px 4px; font-size:11px; border-radius:3px; font-weight:bold; z-index:11;";
@@ -150,20 +145,39 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
     .on('error', (err) => {
         console.error(`❌ Errore download background per ${titoloLog}:`, err);
         if (notificaUI) notificaUI.innerText = "❌ Errore download.";
-
         alert(`Il download di "${titoloLog}" è fallito. YouTube potrebbe aver bloccato la richiesta.`);
     })
     .on('close', async () => {
         try {
-            // Il processo yt-dlp è CHIUSO, gli handle sono liberi. Recuperiamo il titolo reale.
+            // Il processo yt-dlp è CHIUSO. Recuperiamo il titolo reale.
             const info = await ytDlpWrap.getVideoInfo(urlVideo);
-            const titoloPulito = info.title.replace(/[\\\\/:*?"<>|]/g, "_");
+            const titoloPulito = info.title.replace(/[\\/:*?"<>|]/g, "_");
             const pathFinaleDefinitivo = path.join(cartellaDestinazione, `${titoloPulito}.mp4`);
+            const pathCopertinaDefinitiva = path.join(cartellaDestinazione, `${titoloPulito}.jpg`);
 
             if (fs.existsSync(vecchioTemp)) {
 
+                // 1. Rinominiamo il video MP4
                 fs.renameSync(vecchioTemp, pathFinaleDefinitivo);
                 console.log(`🚀 [COMPLETATO] File salvato e sbloccato: ${titoloPulito}.mp4`);
+
+                // 2. 📸 SCARICHIAMO LA COPERTINA IN MODO ISTANTANEO (Forziamo il JPG nativo)
+                if (info.id) {
+                    const urlCoverJpg = `https://img.youtube.com/vi/${info.id}/hqdefault.jpg`;
+                    const https = require('https');
+                    const fileStream = fs.createWriteStream(pathCopertinaDefinitiva);
+                    
+                    https.get(urlCoverJpg, (response) => {
+                        response.pipe(fileStream);
+                        fileStream.on('finish', () => {
+                            fileStream.close();
+                            console.log(`📸 [COPERTINA] Salvata localmente in JPG: ${titoloPulito}.jpg`);
+                        });
+                    }).on('error', (err) => {
+                        console.error("❌ Impossibile salvare la copertina locale:", err);
+                    });
+                }
+
                 if (notificaUI) notificaUI.innerText = "📥 Download completato!";
 
                 // PASSA SIA L'URL ORIGINALE CHE IL PERCORSO MP4 DEFINITIVO
@@ -178,9 +192,6 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
             console.error("❌ Errore durante la rinomina finale:", e);
             if (notificaUI) notificaUI.innerText = "⚠️ Completato con errori.";
         }
-
-        const scanSongs = window.parent.scanSongs || window.scanSongs;
-        if (typeof scanSongs === 'function') scanSongs();
     });
 }
 

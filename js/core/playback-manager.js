@@ -9,8 +9,6 @@
  */
 async function play(fileUrl, el) {
 
-    mostraPlayer();
-    
     const placeholder = document.getElementById('player-placeholder');
     const btnPlay = document.getElementById('btn-filler-play');
     const btnStop = document.getElementById('btn-filler-stop');
