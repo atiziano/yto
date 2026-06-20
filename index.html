@@ -88,17 +88,17 @@
                         </button>
                     </div>
                 </div>
-
-                <div class="sidebar-section">
-                    <h4 class="section-title">Sottofondo Musicale</h4>
-                    <div class="filler-row">
-                        <label class="mini-btn" title="Seleziona mp3 di sottofondo">
-                            📁 <input type="file" accept="audio/*,video/mp4" onchange="loadSingleFiller(this)" style="display:none;">
-                        </label>
-                        <input type="text" id="fillerTitle" placeholder="Nessuno..." readonly>
-                        <button id="btn-filler-play" class="mini-btn" title="Avvia sottofondo" onclick="controlFiller('play')">▶</button>
-                        <button id="btn-filler-stop" class="mini-btn" title="Ferma sottofondo" onclick="controlFiller('stop')">⏹</button>
-                    </div>
+            </div>
+            <!-- Sottofondo alla fine -->
+            <div class="sidebar-section">
+                <h4 class="section-title">Sottofondo Musicale</h4>
+                <div class="filler-row">
+                    <label class="mini-btn" title="Seleziona mp3 di sottofondo">
+                        📁 <input type="file" accept="audio/*,video/mp4" onchange="loadSingleFiller(this)" style="display:none;">
+                    </label>
+                    <input type="text" id="fillerTitle" placeholder="Nessuno..." readonly>
+                    <button id="btn-filler-play" class="mini-btn" title="Avvia sottofondo" onclick="controlFiller('play')">▶</button>
+                    <button id="btn-filler-stop" class="mini-btn" title="Ferma sottofondo" onclick="controlFiller('stop')">⏹</button>
                 </div>
             </div>
         </aside>
