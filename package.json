@@ -10,7 +10,7 @@
     "resizable": true,
     "min_width": 1024,
     "min_height": 576,
-    "toolbar": false
+    "toolbar": true
   },
   "chromium-args": "--autoplay-policy=no-user-gesture-required",
   "dependencies": {
