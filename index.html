@@ -32,10 +32,10 @@
                     oninput="document.getElementById('btnSvuota').style.visibility = this.value.trim().length > 0 ? 'visible' : 'hidden';" 
                     placeholder="Cerca in locale o su YouTube..." autofocus>
                 
-                <button class="search-btn" title="Cerca su YouTube" style="display: inline-flex; align-items: center; gap: 8px;">
+                <button class="search-btn" title="Cerca su YouTube">
                     
                     <span id="btnSvuota" class="mini-btn" 
-                        style="visibility: hidden; cursor: pointer; color: #94a3b8; font-size: 1.2rem; font-weight: bold; width: 20px; text-align: center; display: inline-block; user-select: none;" 
+                        style="visibility: hidden; cursor: pointer;"
                         onclick="event.stopPropagation(); document.getElementById('myInput').value=''; this.style.visibility='hidden'; filter();">×</span>
                     
                     <span onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">🔍</span>
