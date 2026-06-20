@@ -20,22 +20,33 @@
         </div>
         
         <div class="top-center">
-            <div class="search-box-wrapper">
+<div class="search-box-wrapper">
                 <label class="upload-btn" title="Carica Intera Cartella">
                     📁
                     <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
                 </label>
-                <input type="text" id="myInput" onfocus="this.select()" onkeyup="filter()" placeholder="Cerca in locale o su YouTube..." autofocus>
+                
+                <input type="text" id="myInput" 
+                    onfocus="this.select()" 
+                    onkeyup="filter()" 
+                    oninput="document.getElementById('btnSvuota').style.visibility = this.value.trim().length > 0 ? 'visible' : 'hidden';" 
+                    placeholder="Cerca in locale o su YouTube..." autofocus>
+                
+                <button class="search-btn" title="Cerca su YouTube" style="display: inline-flex; align-items: center; gap: 8px;">
+                    
+                    <span id="btnSvuota" class="mini-btn" 
+                        style="visibility: hidden; cursor: pointer; color: #94a3b8; font-size: 1.2rem; font-weight: bold; width: 20px; text-align: center; display: inline-block; user-select: none;" 
+                        onclick="event.stopPropagation(); document.getElementById('myInput').value=''; this.style.visibility='hidden'; filter();">×</span>
+                    
+                    <span onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">🔍</span>
+                </button>
+
                 <select id="quantita-risultati" class="search-select" title="Numero di risultati">
                     <option value="5" selected>5 risultati (Veloce)</option>
                     <option value="10">10 risultati (Normale)</option>
                     <option value="25">25 risultati (Approfondita)</option>
                     <option value="50">50 risultati (Massima)</option>
                 </select>
-                <button class="search-btn" title="Cerca su YouTube" 
-                        onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">
-                    🔍
-                </button>
             </div>
         </div>
 
@@ -206,7 +217,7 @@
         </div>
 
         <main id="content-area">
-            <section id="riquadro-player-cyber">
+            <section id="riquadro-player-cyber" style="display: none">
                 <div id="player-placeholder">
                     <span style="font-size: 48px; margin-bottom: 10px;">📺</span>
                     <p style="font-size: 15px; font-weight: 500;">Pronto per l'esibizione. Scegli una traccia dalla griglia sotto!</p>

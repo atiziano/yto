@@ -224,14 +224,22 @@ function mostraInGriglia(arrayBasi) {
 // Esponiamo la funzione globalmente
 window.mostraInGriglia = mostraInGriglia;
 
-/**
- * Posizionamento sul player
- */
 window.mostraPlayer = function() {
-    // Si sposta sul video
     const riquadroPlayer = document.getElementById('riquadro-player-cyber');
+    
     if (riquadroPlayer) {
-        riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Controlliamo lo stile inline attuale
+        if (riquadroPlayer.style.display === 'none' || riquadroPlayer.style.display === '') {
+            // SE È NASCOSTO: Lo mostriamo
+            riquadroPlayer.style.display = 'block'; // o 'flex', a seconda del tuo layout
+            
+            setTimeout(() => {
+                riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        } else {
+            // SE È VISIBILE: Lo nascondiamo
+            riquadroPlayer.style.display = 'none';
+        }
     }
 }
 
