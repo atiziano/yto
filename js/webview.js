@@ -285,3 +285,189 @@ function cercaSuYouTubeNW(query, limite = 5) {
         }
     });
 }
+
+function caricaVideoYouTube() {
+
+    const placeholder = document.getElementById('player-placeholder');
+    const inputCerca = document.getElementById('myInput');
+    
+    if (!window.yto.players.youtube) {
+        console.error("❌ Errore Critico: Elemento 'youtube-player' non trovato nel DOM!");
+        return;
+    }
+
+    // 1. Recuperiamo il testo inserito dall'utente nella barra di ricerca
+    let testoDaCercare = inputCerca ? inputCerca.value.trim() : "";
+
+    if (testoDaCercare === "") {
+        testoDaCercare = "karaoke";
+    } else {
+        if (!testoDaCercare.toLowerCase().includes("karaoke")) {
+            testoDaCercare += " karaoke";
+        }
+    }
+
+    const queryFormattata = encodeURIComponent(testoDaCercare);
+    console.log(`📺 Apertura di YouTube. Ricerca automatica per: "${testoDaCercare}"`);
+
+    if (window.yto.players.video) {
+        window.yto.players.video.pause();
+        window.yto.players.video.style.display = "none";
+    }
+    if (placeholder) placeholder.style.display = "none";
+    window.yto.players.youtube.style.display = "block";
+
+    // 2. COMPOSIZIONE URL DI RICERCA
+    const urlRicerca = `https://www.youtube.com/results?search_query=${queryFormattata}&sp=EgIgAQ%253D%253D&theme=dark`;
+    window.yto.players.youtube.src = urlRicerca;
+
+    // ====================================================================================
+    // SISTEMA DI POLLING INFALLIBILE (CONTROLLO DIRETTO OGNI 500ms)
+    // ====================================================================================
+    
+    // Se c'è già un vecchio controllo attivo da una ricerca precedente, lo spegniamo
+    if (window.intervalloTracciamentoYT) {
+        clearInterval(window.intervalloTracciamentoYT);
+    }
+
+    // Facciamo partire il controllo continuo sull'attributo .src o .getUrl() della webview
+    let ultimoURLRilevato = "";
+    
+    window.intervalloTracciamentoYT = setInterval(() => {
+        try {
+            // Nelle webview di NW.js l'URL corrente si prende con .src o col metodo .getUrl()
+            let urlCorrente = window.yto.players.youtube.src;
+            if (typeof window.yto.players.youtube.getUrl === 'function') {
+                urlCorrente = window.yto.players.youtube.getUrl();
+            }
+
+            // Se l'URL è cambiato rispetto all'ultimo controllo ed è un video di YouTube
+            if (urlCorrente && urlCorrente !== ultimoURLRilevato) {
+                ultimoURLRilevato = urlCorrente;
+                
+                if (urlCorrente.includes('watch?v=')) {
+                    // Puliamo l'URL troncando i parametri superflui (&list, &index, ecc.)
+                    const urlPulito = urlCorrente.split('&')[0];
+                    
+                    const inputDownload = document.getElementById('url-download');
+                    if (inputDownload) {
+                        inputDownload.value = urlPulito;
+                        console.log("🎯 [SISTEMA DIRETTO] URL Video rilevato e inserito:", urlPulito);
+                        
+                        // Effetto visivo Cyber sul bordo dell'input
+                        inputDownload.style.borderColor = "#00ffcc";
+                        inputDownload.style.boxShadow = "0 0 10px #00ffcc";
+                        setTimeout(() => {
+                            inputDownload.style.borderColor = "";
+                            inputDownload.style.boxShadow = "";
+                        }, 800);
+                    }
+                }
+            }
+        } catch (errPolling) {
+            // Silenziamo eventuali errori momentanei se la webview si sta ricaricando
+        }
+    }, 500); // Controlla ogni mezzo secondo in background
+
+    // ====================================================================================
+
+}
+
+// UNICO ASCOLTATORE PER IL CARICAMENTO DELLA PAGINA (Raggruppa tutto)
+addEventListener('contentload', function gestisciPaginaYouTube() {
+    console.log("🛡️ Pagina aggiornata. Applico protezioni e stili CSS...");
+
+    // Silenzia il finto errore del passaggio a about:blank
+    window.yto.players.youtube.addEventListener('loadabort', (e) => {
+        if (e.url === 'about:blank' || e.code === -3) {
+            console.log("🧹 Webview di YouTube resettata e svuotata con successo.");
+        }
+    });
+
+    // PONTE PER I LOG: Intercetta i log interni di YouTube
+    window.yto.players.youtube.addEventListener('consolemessage', (e) => {
+        if (e.message.includes("🛡️")) {
+            console.log(`[CONTESTO YOUTUBE] ${e.message}`);
+        }
+    });
+
+    // GESTISCE SOLO VERI ERRORI
+    if (window.yto.players.youtube) {
+        window.yto.players.youtube.addEventListener('did-fail-load', (e) => {
+            // Il codice errore -3 è ERR_ABORTED (richiesta annullata intenzionalmente da Chromium)
+            if (e.errorCode === -3) {
+                // Silenziamo l'errore nel log standard perché è solo il login di YouTube abortito
+                console.log("ℹ️ [Webview] Ignorato redirect di login di YouTube (ERR_ABORTED).");
+                return;
+            }
+            
+            // Mostra in console solo i veri errori critici di caricamento (es. internet assente)
+            console.warn(`⚠️ [Webview] Errore di caricamento reale: ${e.errorDescription} (Codice: ${e.errorCode})`);
+        });
+    }
+
+    // INIEZIONE CSS UNIFICATA (Pulisce l'interfaccia e imposta lo sfondo scuro)
+    window.yto.players.youtube.insertCSS({
+        code: `
+            #comments, #sidebar, #header-container, #masthead-container,
+            /* Toglie barra di ricerca e pulsanti
+            .ytp-chrome-top, .ytp-sharing-button { 
+                display: none !important; 
+            }
+            */
+            ytd-watch-flexy { margin-top: 0 !important; padding: 0 !important; }
+            #masthead-container, ytd-app { background: #0f172a !important; }
+        `
+    }, () => {
+        if (chrome.runtime.lastError) {
+            console.warn("Nota CSS:", chrome.runtime.lastError.message);
+        } else {
+            console.log("🎨 [CSS] Layout ripulito e sfondo scuro applicato!");
+        }
+    });
+
+    // INIEZIONE ADBLOCK E COALIZIONE VIDEO
+    window.yto.players.youtube.executeScript({
+        code: `
+            if (window.mioIntervalloAdBlock) {
+                clearInterval(window.mioIntervalloAdBlock);
+            }
+
+            window.mioIntervalloAdBlock = setInterval(() => {
+
+                // --- 1. RILEVAMENTO VIDEO (Contesto YouTube) ---
+                const inAd = document.querySelector('.ad-showing');
+                if (!inAd) {
+                    const mainVideo = document.querySelector('video');
+
+                    if (mainVideo && window.mioVideoKaraoke !== mainVideo) {
+                        window.mioVideoKaraoke = mainVideo;
+                        console.log("🛡️ [YouTube] Nuovo video Karaoke intercettato e memorizzato!");
+                    }
+                }
+
+                // --- 2. GESTIONE AD-BLOCK ---
+                const skipButton = document.querySelector('.ytp-ad-skip-button, .ytp-skip-ad-button, .ytp-ad-skip-button-modern');
+                if (skipButton) {
+                    skipButton.click();
+                    console.log("🛡️ Spot pubblicitario rilevato e saltato!");
+                }
+
+                const ad = document.querySelector('.ad-showing video');
+                if (ad) {
+                    ad.playbackRate = 16;
+                    ad.muted = true;
+                    console.log("🛡️ Annuncio non skippabile accelerato!");
+                }
+
+                const overlay = document.querySelector('.ytp-ad-overlay-container, #player-ads, ytd-banner-promo-renderer');
+                if (overlay && overlay.style.display !== 'none') {
+                    overlay.style.display = 'none';
+                    console.log("🛡️ Banner grafico nascosto!");
+                }
+            }, 300);
+        `
+    }, () => {
+        // console.warn("executeScript error");
+    });
+});    

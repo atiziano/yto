@@ -150,3 +150,66 @@ function aggiornaInterfacciaRicerca(risultati) {
     aggiungiTracceAlDatabase(tracceNormalizzate);
 }
 window.aggiornaInterfacciaRicerca = aggiornaInterfacciaRicerca;
+
+function switchPlayer(tipoTarget) {
+    const placeholder = document.getElementById('player-placeholder');
+
+    console.log(`🎛️ [Interruttore] Switch a caldo richiesto su: ${tipoTarget}`);
+
+    if (tipoTarget === 'youtube') {
+        // --- PASSAGGIO A YOUTUBE ---
+        // Se la webview era vuota su about:blank, significa che è vuota e aspetta il primo caricamento
+
+        const srcProprieta = window.yto.players.youtube.src ? window.yto.players.youtube.src.trim() : "";
+        const srcAttributo = window.yto.players.youtube.getAttribute('src') ? window.yto.players.youtube.getAttribute('src').trim() : "";
+
+        // Controllo unico: se uno dei due è vuoto o punta a about:blank
+        if (!srcProprieta || srcProprieta === "about:blank" || !srcAttributo || srcAttributo === "about:blank") {
+            console.log("🌐 [Switch] La webview è vuota. Carico la homepage di YouTube.");
+            caricaVideoYouTube();
+        }
+
+        // Nascondiamo il locale senza resettarlo (mantiene la posizione corrente del brano!)
+        window.yto.players.video.style.display = "none";
+        if (placeholder) placeholder.style.display = "none";
+        
+        // Portiamo in primo piano la webview
+        window.yto.players.youtube.style.display = "block";
+        
+    } else if (tipoTarget === 'locale') {
+        // --- PASSAGGIO A LOCALE ---
+        // Nascondiamo YouTube (rimane congelato in background senza perdere la pagina aperta)
+        window.yto.players.youtube.style.display = "none";
+        if (placeholder) placeholder.style.display = "none";
+        
+        // Mostriamo il player locale offline
+        window.yto.players.video.style.display = "block";
+    }
+}
+window.switchPlayer = switchPlayer;
+
+// Ascolta i clic su tutta la pagina
+document.addEventListener('click', function (event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menu-toggle');
+    // Selezioniamo il contenitore della ricerca che ora si trova nel content-area
+    const searchBox = document.querySelector('.top-center');
+
+    // Se la sidebar è visibile (quindi NON ha la classe 'sidebar-hidden')
+    if (sidebar && !sidebar.classList.contains('sidebar-hidden')) {
+        
+        // Verifica che il clic sia avvenuto FUORI da:
+        // 1. Sidebar stessa
+        // 2. Bottone tre linee ☰
+        // 3. Intero blocco di ricerca (input, select, bottoni caricamento/svuota)
+        const clickedInsideSidebar = sidebar.contains(event.target);
+        const clickedMenuToggle = menuToggle && menuToggle.contains(event.target);
+        const clickedSearchBox = searchBox && searchBox.contains(event.target);
+
+        if (!clickedInsideSidebar && !clickedMenuToggle && !clickedSearchBox) {
+            // Chiudi la sidebar in sicurezza
+            sidebar.classList.add('sidebar-hidden');
+            if (menuToggle) menuToggle.classList.remove('active'); 
+        }
+    }
+});

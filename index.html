@@ -13,43 +13,12 @@
 
     <header id="youtube-top-bar">
         <div class="top-left">
-            <button id="menu-toggle" title="Guida menu">☰</button>
+            <button id="menu-toggle" title="Menu">☰</button>
             <div class="logo-container">
                 <span class="logo-text">YouTube<span class="logo-badge">Offline</span></span>
             </div>
         </div>
         
-        <div class="top-center">
-<div class="search-box-wrapper">
-                <label class="upload-btn" title="Carica Intera Cartella">
-                    📁
-                    <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
-                </label>
-                
-                <input type="text" id="myInput" 
-                    onfocus="this.select()" 
-                    onkeyup="filter()" 
-                    oninput="document.getElementById('btnSvuota').style.visibility = this.value.trim().length > 0 ? 'visible' : 'hidden';" 
-                    placeholder="Cerca in locale o su YouTube..." autofocus>
-                
-                <button class="search-btn" title="Cerca su YouTube">
-                    
-                    <span id="btnSvuota" class="mini-btn" 
-                        style="visibility: hidden; cursor: pointer;"
-                        onclick="event.stopPropagation(); document.getElementById('myInput').value=''; this.style.visibility='hidden'; filter();">×</span>
-                    
-                    <span onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">🔍</span>
-                </button>
-
-                <select id="quantita-risultati" class="search-select">
-                    <option value="1">1 Risultato</option>
-                    <option value="5">5 Risultati</option>
-                    <option value="10">10 Risultati</option>
-                    <option value="25">25 Risultati</option>
-                    <option value="50">50 Risultati</option>
-                </select>
-            </div>
-        </div>
 
         <div class="top-right" style="position: relative;">
             
@@ -77,6 +46,7 @@
                     </div>
                 </div>
 
+                <!-- ================= SEZIONE STRUMENTI DI CONTROLLO ================= -->
                 <div class="sidebar-section">
                     <h4 class="section-title">Strumenti di Controllo</h4>
                     <div class="controls-vertical-grid">
@@ -88,7 +58,30 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- ================= SEZIONE YOUTUBE ================= -->
+                <div class="sidebar-section">
+                    <h4 class="section-title">Sorgenti Video</h4>
+                    <div class="filler-row">
+                        <input class="mini-btn" type="text" id="url-download" placeholder="Link YouTube..." readonly>
+                        <button id="btn-switch-youtube" class="btn-fx" title="Passa a YouTube" onclick="switchPlayer('youtube')" 
+                                style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #ff0000; border: none; border-radius: 8px; cursor: pointer;">
+                            <div style="width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #ffffff; margin-left: 3px;"></div>
+                        </button>
+                        <button id="btn-switch-locale" class="btn-fx" title="Passa a Video Locali" onclick="switchPlayer('locale')" 
+                                style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #0284c7; border: none; border-radius: 8px; cursor: pointer;">
+                            <div style="width: 16px; height: 12px; border: 2px solid #ffffff; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 0; height: 0; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 5px solid #ffffff; margin-left: 1px;"></div>
+                            </div>
+                        </button>
+                        <button id="start-streaming" class="btn-fx" title="Avvia Streaming Live" onclick="caricaVideoYouTubeNelTagLocale(document.getElementById('url-download').value)" style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📡</button>
+                        <button id="start-download" class="btn-fx" title="Avvia Download" onclick="avviaDownloadDaYouTube(document.getElementById('url-download').value)" style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📥</button>
+
+                    </div>
+                </div>
+
             </div>
+
             <!-- Sottofondo alla fine -->
             <div class="sidebar-section">
                 <h4 class="section-title">Sottofondo Musicale</h4>
@@ -225,7 +218,47 @@
                 </div>
                 <audio id="suono" loop></audio>
                 <video id="vid" controls crossorigin="anonymous"></video>
+                <webview 
+                    id="youtube-player" 
+                    partition="trusted"
+                    preload="webview.js"
+                    allownw
+                    useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+                    style="width: 100%; height: 100%; display: none; border: none; position: absolute; top: 0; left: 0; z-index: 3;">
+                </webview>
+
             </section>
+            <div class="top-center">
+                <div class="search-box-wrapper">
+                    <label class="upload-btn" title="Carica Intera Cartella">
+                        📁
+                        <input type="file" webkitdirectory directory onchange="loadExternalFiles(this)" style="display:none;">
+                    </label>
+                    
+                    <input type="text" id="myInput" 
+                        onfocus="this.select()" 
+                        onkeyup="filter()" 
+                        oninput="document.getElementById('btnSvuota').style.visibility = this.value.trim().length > 0 ? 'visible' : 'hidden';" 
+                        placeholder="Cerca in locale o su YouTube..." autofocus>
+                    
+                    <button class="search-btn" title="Cerca su YouTube">
+                        
+                        <span id="btnSvuota" class="mini-btn" 
+                            style="visibility: hidden; cursor: pointer;"
+                            onclick="event.stopPropagation(); document.getElementById('myInput').value=''; this.style.visibility='hidden'; filter();">×</span>
+                        
+                        <span onclick="cercaSuYouTubeNW(document.getElementById('myInput').value, document.getElementById('quantita-risultati').value)">🔍</span>
+                    </button>
+
+                    <select id="quantita-risultati" class="search-select">
+                        <option value="1">1 Risultato</option>
+                        <option value="5">5 Risultati</option>
+                        <option value="10">10 Risultati</option>
+                        <option value="25">25 Risultati</option>
+                        <option value="50">50 Risultati</option>
+                    </select>
+                </div>
+            </div>
 
             <section id="video-grid-section">
                 <h3 style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 600; color: #f8fafc;">
@@ -252,7 +285,7 @@
     <script src="js/ui/filler-manager.js"></script>
     <script src="js/app.js"></script>
     <script src="js/studio.js"></script>
-    <script src="js/youtube.js"></script>
+    <script src="js/webview.js"></script>
     <script src="js/singers.js"></script>
     <script src="js/qrcode.js"></script>
 

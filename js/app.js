@@ -14,7 +14,8 @@ window.yto = {
     databaseBasi: [],
     players: {
         video: null,
-        sound: null
+        sound: null,
+        youtube: null
     },
     audio: {
         isSetup: false,
@@ -42,6 +43,7 @@ function initApp() {
     // Recupera i riferimenti ai player nel DOM
     window.yto.players.video = document.getElementById('vid');
     window.yto.players.sound = document.getElementById('suono');
+    window.yto.players.youtube = document.getElementById('youtube-player');
 
     // 1. Carica la cartella predefinita standard all'avvio
     const percorsoSongs = path.join(process.cwd(), 'songs');
@@ -185,10 +187,10 @@ function mostraInGriglia(arrayBasi) {
         let fallbackIcona = "🎵";
 
         if (base.tipo === 'youtube') {
-            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:10; user-select:none;">🌐 YT</div>`;
+            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:2; user-select:none;">🌐 YT</div>`;
             fallbackIcona = "🌐";
         } else if (base.tipo === 'locale') {
-            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(34,197,94,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:10; user-select:none;">📁 PC</div>`;
+            badgeSorgente = `<div class="badge-sorgente" style="position:absolute; top:5px; right:5px; background:rgba(34,197,94,0.85); color:white; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold; z-index:2; user-select:none;">📁 PC</div>`;
             fallbackIcona = !base.pathCompleto ? '📥' : '🎵';
         }
         
