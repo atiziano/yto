@@ -1,39 +1,79 @@
 /* ==========================================================================
-   1. RESET E VARIABILI GLOBALI (YouTube-Dark Style + Cyber Accents)
+   1. VARIABILI GLOBALI - SISTEMA DUAL THEME (DARK / LIGHT)
    ========================================================================== */
+
 :root {
-    /* ==========================================================================
-       IL TUO SFONDO ULTRA-DARK RIPRISTINATO
-       ========================================================================== */
-    --bg-base: #090d16;           /* Sfondo principale ultra-dark che preferisci */
-    --bg-header: #0f172a;         /* La barra superiore ora si abbina al bluastro scuro */
-    --bg-sidebar: #0f172a;        /* La sidebar prende lo sfondo coerente del vecchio pro */
-    
-    /* ==========================================================================
-       SUPERFICI E CONTRASTI (Stile YouTube ma su base Blu-Dark)
-       ========================================================================== */
-    --bg-surface: #1e293b;        /* Superficie dei pannelli fluttuanti e card (ex #1f1f1f) */
-    --bg-input: #0d1222;          /* Input box di ricerca leggermente più scuro dello sfondo */
-    --bg-panel: #1e293b;          /* Colore pannelli hardware (preservato) */
-    --bg-search: #d0eb36;         /* Giallo evidenziatore ricerca */
+    /* ==========================================
+       TEMA PREDEFINITO: DARK MODE (Cyberpunk)
+       ========================================== */
+    --bg-base: #0f172a;           /* Sfondo principale scuro */
+    --bg-header: #1e293b;         /* Barra superiore scura */
+    --bg-sidebar: #1e293b;        /* Sidebar scura */
+    --bg-surface: #1e293b;        /* Superficie delle card e pannelli */
+    --bg-input: #0f172a;          /* Input box e select scuri */
+    --bg-panel: #1e293b;          /* Pannelli hardware scuri */
+    --bg-search: #d0eb36;         /* Giallo evidenziatore (rimane invariato) */
     
     /* ACCENTI E COLORI LIVE */
-    --accent-red: #ff0000;        /* Rosso nativo Live YouTube */
-    --accent: #8b5cf6;            /* Viola primario neon per i controlli studio */
-    --accent-hover: #a78bfa;      /* Viola chiaro per gli stati hover */
-    --success: #10b981;           /* Verde smeraldo attivo */
-    --danger: #ef4444;            /* Rosso alert */
+    --accent-red: #ff0000;
+    --accent: #a78bfa;            /* Viola più chiaro/neon per il dark mode */
+    --accent-hover: #c084fc;
+    --success: #10b981;
+    --danger: #ef4444;
     
-    /* TESTI E BORDI ADATTATI */
-    --text-primary: #f8fafc;      /* Testo principale bianco nitido */
-    --text-secondary: #94a3b8;    /* Testo secondario grigio-azzurro pulito */
-    --text-muted: #64748b;        /* Testo disattivato/muto */
-    --text-search: #0d0e0b;       /* Testo scuro per evidenziare */
-    --border-main: #1e293b;       /* Bordi scuri coordinati */
-    --border-color: #334155;      /* Bordi per pannelli ed effetti */
-    --radius: 12px;               /* Arrotondamento moderno */
-    --shadow: 0 12px 24px rgba(0,0,0,0.6);
+    /* TESTI E BORDI (VERSIONE DARK) */
+    --text-primary: #f8fafc;      /* Testo chiaro su fondo scuro */
+    --text-secondary: #94a3b8;    /* Testo grigio secondario */
+    --text-muted: #64748b;
+    --text-search: #0d0e0b;
+    --border-main: #334155;       /* Bordi scuri ma visibili */
+    --border-color: #475569;
+    
+    /* UTILITY VARIABILI AGGIUNTE PER SCROLLBAR E MENU SEGRETI */
+    --bg-scrollbar: #3f3f3f;
+    --bg-scrollbar-hover: #555555;
+    --bg-dropdown: #1e222b;
+    --border-dropdown: #3f4452;
+    --text-dropdown-hover: #ffffff;
+    
+    --radius: 12px;
+    --shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
     --yt-font: "Roboto", "Arial", sans-serif;
+}
+
+/* ==========================================
+   SOVRASCRITTURA PER LIGHT MODE 
+   (Si attiva aggiungendo la classe al body)
+   ========================================== */
+body.light-mode {
+    --bg-base: #f1f5f9;           /* Sfondo principale chiaro */
+    --bg-header: #ffffff;         /* Barra superiore bianca */
+    --bg-sidebar: #e2e8f0;        /* Sidebar grigio-azzurra */
+    --bg-surface: #ffffff;        /* Superficie delle card bianca */
+    --bg-input: #f8fafc;          /* Input box chiarissimo */
+    --bg-panel: #ffffff;          /* Pannelli hardware bianchi */
+    
+    /* ACCENTI ADATTATI AL CHIARO */
+    --accent: #7c3aed;            /* Viola più saturo e scuro per leggerlo sul chiaro */
+    --accent-hover: #6d28d9;      /* Viola scuro per gli stati hover */
+    --success: #059669;           /* Verde smeraldo scuro */
+    --danger: #dc2626;            /* Rosso scuro */
+    
+    /* TESTI E BORDI INVERTITI */
+    --text-primary: #0f172a;      /* Testo scuro Blu-Notte */
+    --text-secondary: #475569;    /* Testo secondario ardesia */
+    --text-muted: #64748b;        /* */
+    --border-main: #cbd5e1;       /* Bordi grigi leggeri */
+    --border-color: #94a3b8;      /* */
+    
+    /* VARIABILI PER SCROLLBAR E MENU SEGRETI ADATTATI AL CHIARO */
+    --bg-scrollbar: #cbd5e1;
+    --bg-scrollbar-hover: #94a3b8;
+    --bg-dropdown: #ffffff;
+    --border-dropdown: #cbd5e1;
+    --text-dropdown-hover: #7c3aed;
+    
+    --shadow: 0 10px 20px rgba(15, 23, 42, 0.06); /* Ombra molto morbida */
 }
 
 * {
@@ -85,7 +125,7 @@ body {
     border-radius: 50%;
     transition: background 0.2s;
 }
-#menu-toggle:hover { background: #272727; }
+#menu-toggle:hover { background: var(--bg-sidebar); } /* DINAMICO: ex #272727 */
 
 .logo-container {
     display: flex;
@@ -121,7 +161,7 @@ body {
 }
 
 .search-box-wrapper {
-    display: flex;           /* Mantiene la disposizione in riga di icone e input */
+    display: flex;           /* Mantiene la disposition in riga di icone e input */
     align-items: center;
     width: 60%;
     background-color: var(--bg-input);
@@ -137,7 +177,7 @@ body {
     background: transparent;
     background-color: var(--bg-input);
     border: none;
-    color: var(--text-primary);;
+    color: var(--text-primary);
     padding: 0 16px;
     font-size: 14px;
     outline: none;
@@ -150,31 +190,46 @@ body {
 }
 
 .search-btn {
-    width: 64px;
-    background-color: #222222;
+    width: 50px;                     /* Ridotto da 64px per centrare la lente senza sprechi */
+    height: 100%;                    /* Prende l'altezza piena del wrapper */
+    background-color: var(--bg-sidebar); 
     border: none;
     border-left: 1px solid var(--border-main);
-    color: white;
+    color: var(--text-primary); 
     cursor: pointer;
     font-size: 15px;
-    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    transition: background 0.2s, color 0.2s;
 }
 
-.search-btn:hover { background: #2f2f2f; }
+.search-btn:hover { 
+    background: var(--border-main); 
+    color: var(--accent);            /* La lente si colora di viola all'hover */
+}
 
 .search-select {
-    background-color: var(--bg-header); /* Si coordina perfettamente con lo sfondo della barra/input */
-    color: var(--text-secondary);         /* Bianco nitido per il testo dei numeri */
+    height: 100%;                    /* Si allinea geometricamente all'altezza della barra */
+    background-color: var(--bg-sidebar); /* Cambiato da --bg-header per uniformarsi al tasto lente */
+    color: var(--text-primary);       /* Sostituito var(--text-secondary) per massima leggibilità */
     border: none;
     outline: none;
     cursor: pointer;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    
+    /* Chiude l'angolo arrotondato finale della barra */
+    border-top-right-radius: 40px;
+    border-bottom-right-radius: 40px;
 }
 
-/* Per evitare che le opzioni dentro la tendina abbiano sfondi bianchi brutti su Windows */
+/* Fix per le opzioni della tendina nei sistemi Windows/NW.js */
 .search-select option {
-    background-color: var(--bg-header);
-    color: var(--text-secondary);
-    border: none;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
 }
 
 .top-right {
@@ -183,17 +238,18 @@ body {
     gap: 15px;
 }
 .upload-btn {
-    background: #272727;
+    background: var(--bg-sidebar); /* DINAMICO: ex #272727 */
     color: var(--text-secondary);
     padding: 8px 14px;
-    border-radius: 18px;
+    border-start-start-radius: 40%;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
+    height: 100%;
     transition: background 0.2s;
 }
 
-.upload-btn:hover { background: #3f3f3f; }
+.upload-btn:hover { background: var(--border-main); } /* DINAMICO: ex #3f3f3f */
 
 #stat { font-size: 13px; color: var(--text-secondary); }
 
@@ -220,7 +276,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 10px 0 30px rgba(0,0,0,0.7);
+    box-shadow: var(--shadow); /* DINAMICO: ex box-shadow pesante */
     border-right: 1px solid var(--border-main);
     width: 280px;
     max-width: 280px;
@@ -251,7 +307,7 @@ body {
 }
 .sidebar-section {
     padding: 12px 0;
-    border-bottom: 1px solid #272727;
+    border-bottom: 1px solid var(--border-main); /* DINAMICO: ex #272727 */
 }
 .section-title {
     font-size: 12px;
@@ -286,7 +342,7 @@ body {
 }
 .btn-fx.active { border-color: var(--accent) !important; }
 .btn-fx:not(.active) { border-color: var(--border-color) !important; }
-.btn-fx:hover:not([disabled]) { background-color: rgba(255,255,255,0.05); border-color: var(--text-muted); }
+.btn-fx:hover:not([disabled]) { background-color: var(--bg-sidebar); border-color: var(--text-muted); } /* DINAMICO: ex rgba white */
 
 .filler-row {
     display: flex;
@@ -312,14 +368,41 @@ body {
     font-size: 11px;
 }
 .mini-btn {
-    background: #272727;
-    border: none;
+    background: var(--bg-sidebar); /* DINAMICO: ex #272727 */
+    border: 1px solid var(--border-main); /* Aggiunto per staccare sul chiaro */
     color: var(--text-primary);
     padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
+    transition: background 0.2s;
 }
-.mini-btn:hover { background: #3f3f3f; }
+.mini-btn:hover { background: var(--border-main); } /* DINAMICO: ex #3f3f3f */
+
+.nav-player-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    cursor: pointer;
+    font-size: 22px; /* Dimensione unificata per bilanciare i simboli */
+    font-family: inherit;
+    
+    /* 🎯 CENTRATURA GEOMETRICA PERFETTA */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1 !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+    
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+/* Effetto illuminazione al passaggio del mouse basato sul tema attivo */
+.nav-player-btn:hover {
+    color: var(--accent) !important;
+    transform: scale(1.15);
+}
 
 /* STATI SPECIALI FILLER (Live Neon Effects) */
 .btn-filler-active-play {
@@ -344,7 +427,7 @@ body {
 #filler-controls, #button-playing {
     padding: 15px 20px;
     border-top: 1px solid var(--border-main);
-    background-color: rgba(15, 23, 42, 0.95);
+    background-color: var(--bg-base); /* DINAMICO: ex rgba scuro fisso */
     flex-shrink: 0;
 }
 #button-playing { padding-bottom: 25px; display: flex; gap: 8px; }
@@ -378,7 +461,7 @@ body {
     border-radius: 12px;
     padding: 16px;
     z-index: 10010; /* Sta sopra alla barra di navigazione */
-    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    box-shadow: var(--shadow); /* DINAMICO: ex shadow fissa scura */
     backdrop-filter: blur(10px);
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -412,10 +495,10 @@ body {
 
 /* HARDWARE-SLIDER CUSTOMIZZATI */
 input[type="range"] {
-    -webkit-appearance: none;
     width: 100%;
     height: 6px;
-    background: #111;
+    background: var(--bg-input); /* DINAMICO: ex #111 */
+    border: 1px solid var(--border-main); /* Aggiunto per contrasto */
     border-radius: 5px;
     outline: none;
 }
@@ -427,8 +510,8 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid var(--text-primary);
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+    border: 2px solid var(--bg-surface); /* DINAMICO: ex var(--text-primary) che sul chiaro diventava scuro */
+    box-shadow: 0 0 8px var(--border-color); /* DINAMICO */
     transition: transform 0.1s, background-color 0.2s;
 }
 input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover); transform: scale(1.2); }
@@ -477,22 +560,17 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     transform: translate(-50%, -50%);
     width: 90vw;
     height: 90vh;
-    background-color: #0f172a;
-    border: 2px solid #334155;
+    background-color: #0f172a; /* Questo conviene lasciarlo scuro nativo così il cinema-mode risalta */
+    border: 2px solid var(--border-color); /* DINAMICO: ex #334155 */
     border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    box-shadow: var(--shadow);
     z-index: 10000;
     
     display: block; 
-    padding: 0 !important; /* Rimosso il padding che creava spazio vuoto */
+    padding: 0 !important;
     margin: 0;
-
-    /* ========================================================= */
-    /* RIPRISTINATO IL RESIZE                                    */
-    /* ========================================================= */
-    resize: both;         /* Riabilita la maniglia in basso a destra */
-    overflow: hidden;     /* Fondamentale per il funzionamento del resize */
-    /* ========================================================= */
+    resize: both;         
+    overflow: hidden;     
 }
 
 /* I figli rimangono in "absolute" così coprono ogni pixel, anche durante il resize */
@@ -506,7 +584,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    object-fit: fill !important; /* Forza il video a riempire tutto senza bande */
+    object-fit: fill !important; 
     border: none !important;
 }
 
@@ -525,77 +603,39 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     margin: 0;
 }
 
-/* IL BOTTONE DI CHIUSURA SOVRAPPOSTO */
-.close-player {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 35px;
-    height: 35px;
-    /* Sfondo scuro semi-trasparente miscelato con il tuo colore base per non perdere il look cyber */
-    background-color: rgba(0, 0, 0, 0.75) !important; 
-    /* Bordo leggermente più visibile per staccarsi dal video */
-    border: 1px solid var(--border-color) !important;
-    border-radius: 50%;                     /* Bottone tondo */
-    color: var(--accent-red) !important;
-    font-size: 24px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10005;                         /* PIÙ ALTO del video e del webview */
-    padding: 0;
-    
-    /* Ombra esterna netta (drop-shadow) che isola il cerchio dalle grafiche di YouTube */
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(0, 0, 0, 0.5);
-    /* Ombra sul testo/simbolo per farlo risaltare anche se sotto passano immagini bianche */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-    
-    transition: all 0.2s ease;
-}
-
-/* Effetto Hover per dare un feedback cyberpunk quando ci passi sopra */
-.close-player:hover {
-    background-color: rgba(0, 0, 0, 0.9) !important;
-    border-color: var(--accent-red) !important; /* Il bordo si accende del tuo rosso accent */
-    transform: scale(1.08); /* Leggero zoom dinamico */
-    box-shadow: 0 0 12px rgba(255, 0, 0, 0.3); /* Lieve bagliore rosso */
-}
-
 #player-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #555555;
+    color: var(--text-muted); /* DINAMICO: ex #555555 */
     gap: 8px;
 }
 
-/* BOTTONE DI CHIUSURA (X) */
+/* IL BOTTONE DI CHIUSURA SOVRAPPOSTO COMPATTO (Usa la classe generica per ora) */
 .close-player {
     position: absolute;
     top: 10px;
     right: 20px;
     font-size: 30px;
-    color: #94a3b8;
+    color: var(--text-secondary); /* DINAMICO: ex #94a3b8 */
     cursor: pointer;
     transition: color 0.2s;
     z-index: 10001;
     user-select: none;
 }
 .close-player:hover {
-    color: #ef4444;
+    color: var(--danger); /* DINAMICO: ex #ef4444 */
 }
 
-#fillerPlayer { display: none; } /* Player audio nascosto */
+#fillerPlayer { display: none; } 
 
 /* ==========================================================================
    6. SEZIONE TRACCE: GRIGLIA DELLE COPERTINE (STYLE YOUTUBE DIGITALE)
    ========================================================================== */
 #video-grid-section {
     width: 100%;
-    padding: 0 32px; /* Ridiamo il padding rimosso per allineare la griglia */
+    padding: 0 32px; 
     box-sizing: border-box;
 }
 
@@ -610,8 +650,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 #myUL {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Colonne dinamiche perfette
-    /* grid-template-columns: repeat(3, 1fr); */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
     gap: 20px;
     padding: 0;
 }
@@ -628,9 +667,10 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 #myUL li .traccia-copertina-wrapper,
 #myUL li .thumbnail-wrapper {
     width: 100%;
-    aspect-ratio: 16 / 9; /* Geometria esatta delle miniature YouTube */
-    background-color: #272727;
-    border-radius: 12px; /* Angoli stondati moderni delle copertine correnti */
+    aspect-ratio: 16 / 9; 
+    background-color: var(--bg-sidebar); /* DINAMICO: ex #272727 */
+    border: 1px solid var(--border-main); /* Aggiunto per dare stacco geometrico sul chiaro */
+    border-radius: 12px; 
     overflow: hidden;
     position: relative;
     margin-bottom: 10px;
@@ -646,7 +686,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 #myUL li .thumbnail-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Riempie il box ritagliandosi proporzionalmente */
+    object-fit: cover; 
     display: block;
     transition: transform 0.2s ease;
 }
@@ -663,10 +703,10 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* 🌐 Le tracce di YouTube partono più opache (es. al 55%) per mostrare che sono "in cloud" */
+/* 🌐 Le tracce di YouTube partono più opache per mostrare che sono "in cloud" */
 #myUL li.is-youtube {
-    opacity: 0.45;
-    filter: grayscale(20%); /* Opzionale: spegne leggermente anche i colori */
+    opacity: 0.55; /* Alzato leggermente dal 45% per migliore visibilità sul chiaro */
+    filter: grayscale(15%); 
     transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease;
 }
 
@@ -678,7 +718,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 
 /* Quando la card di YouTube è in fase di download, pulsa! */
 #myUL li.is-youtube.is-downloading {
-    opacity: 0.85; /* Diventa più visibile rispetto alle altre di YT */
+    opacity: 0.85; 
     animation: pulseDownload 1.5s infinite ease-in-out;
 }
 
@@ -698,7 +738,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     color: var(--text-primary);
     line-height: 1.4;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Taglia ordinatamente il testo se supera la seconda riga */
+    -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -722,12 +762,12 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 }
 
 #myUL li.active .video-title {
-    color: #ff4444;
+    color: var(--accent-red); /* DINAMICO: ex rosso fisso */
     font-weight: bold;
 }
 
 /* ==========================================================================
-   7. CUSTOM SCROLLBARS E UTILITY
+   7. CUSTOM SCROLLBARS E UTILITY DINAMICHE
    ========================================================================== */
 #content-area::-webkit-scrollbar,
 .sidebar-scrollable-content::-webkit-scrollbar,
@@ -737,25 +777,25 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 #content-area::-webkit-scrollbar-thumb,
 .sidebar-scrollable-content::-webkit-scrollbar-thumb,
 .panel-scroll::-webkit-scrollbar-thumb {
-    background: #3f3f3f;
+    background: var(--bg-scrollbar); /* DINAMICO */
     border-radius: 4px;
 }
 #content-area::-webkit-scrollbar-thumb:hover,
 .sidebar-scrollable-content::-webkit-scrollbar-thumb:hover,
 .panel-scroll::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--bg-scrollbar-hover); /* DINAMICO */
 }
 
 /* Stile del menu a tendina segreto */
 .dropdown-menu-segreto {
-    display: none; /* Parte nascosto */
+    display: none;
     position: absolute;
-    top: 40px;     /* Lo spinge esattamente sotto la barra dei pulsanti */
-    right: 0;      /* Lo allinea perfettamente al bordo destro dello schermo */
-    background-color: #1e222b; /* Grigio scuro coerente con l'app */
-    border: 1px solid #3f4452;
+    top: 40px;
+    right: 0;
+    background-color: var(--bg-dropdown); /* DINAMICO: ex #1e222b */
+    border: 1px solid var(--border-dropdown); /* DINAMICO: ex #3f4452 */
     border-radius: 6px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow);
     z-index: 9999;
     min-width: 160px;
     overflow: hidden;
@@ -764,7 +804,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 /* Stile delle singole voci del menu */
 .dropdown-menu-segreto .menu-item {
     padding: 10px 14px;
-    color: #e3e3e3;
+    color: var(--text-primary); /* DINAMICO: ex #e3e3e3 */
     font-size: 13px;
     cursor: pointer;
     text-align: left;
@@ -773,6 +813,6 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 
 /* Effetto Hover sulle voci */
 .dropdown-menu-segreto .menu-item:hover {
-    background-color: #2c313c;
-    color: #ffffff;
+    background-color: var(--bg-sidebar); /* DINAMICO: ex #2c313c */
+    color: var(--text-dropdown-hover); /* DINAMICO: ex #ffffff */
 }

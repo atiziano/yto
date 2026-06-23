@@ -244,6 +244,11 @@ document.addEventListener('click', function (event) {
     // Se la sidebar è visibile (quindi NON ha la classe 'sidebar-hidden')
     if (sidebar && !sidebar.classList.contains('sidebar-hidden')) {
         
+        // Controlla se il click è partito da dentro uno dei pannelli floating o dall'equalizzatore
+        const cliccatoSuPannelloProtetto =  event.target.closest('#mixer-panel') || 
+                                            event.target.closest('#pitch-panel') || 
+                                            event.target.closest('#singer-panel') ||
+                                            event.target.closest('#studio-panel');
         // Verifica che il clic sia avvenuto FUORI da:
         // 1. Sidebar stessa
         // 2. Bottone tre linee ☰
@@ -252,7 +257,7 @@ document.addEventListener('click', function (event) {
         const clickedMenuToggle = menuToggle && menuToggle.contains(event.target);
         const clickedSearchBox = searchBox && searchBox.contains(event.target);
 
-        if (!clickedInsideSidebar && !clickedMenuToggle && !clickedSearchBox) {
+        if (!cliccatoSuPannelloProtetto && !clickedInsideSidebar && !clickedMenuToggle && !clickedSearchBox) {
             // Chiudi la sidebar in sicurezza
             sidebar.classList.add('sidebar-hidden');
             if (menuToggle) menuToggle.classList.remove('active'); 

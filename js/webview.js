@@ -318,7 +318,12 @@ function caricaVideoYouTube() {
     window.yto.players.youtube.style.display = "block";
 
     // 2. COMPOSIZIONE URL DI RICERCA
-    const urlRicerca = `https://www.youtube.com/results?search_query=${queryFormattata}&sp=EgIgAQ%253D%253D&theme=dark`;
+    // Determina il tema da passare a YouTube in base alla classe presente sul body
+    const temaYouTube = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+
+    // Sostituisci la stringa fissa con la variabile dinamica
+    const urlRicerca = `https://www.youtube.com/results?search_query=${queryFormattata}&sp=EgIgAQ%253D%253D&theme=${temaYouTube}`;
+
     window.yto.players.youtube.src = urlRicerca;
 
     // ====================================================================================

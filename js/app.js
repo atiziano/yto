@@ -5,6 +5,8 @@ const https = require('https');
 const gui = require('nw.gui');
 const { exec } = require('child_process');
 
+const listaTemi = ['dark', 'light'];
+
 // ==========================================================================
 // APP.JS - MAIN APPLICATION FILE (Struttura ad Oggetto Unico)
 // ==========================================================================
@@ -44,6 +46,8 @@ function initApp() {
     window.yto.players.video = document.getElementById('vid');
     window.yto.players.sound = document.getElementById('suono');
     window.yto.players.youtube = document.getElementById('youtube-player');
+
+    caricaTemaPredefinito();
 
     // 1. Carica la cartella predefinita standard all'avvio
     const percorsoSongs = path.join(process.cwd(), 'songs');
@@ -237,7 +241,7 @@ window.toggleModaleAttesa = function(mostra) {
 
     if (mostra) {
         if (!dialog.open) {
-            dialog.showModal();
+            dialog.show();
         }
     } else {
         if (dialog.open) {
@@ -453,6 +457,44 @@ window.aggiungiTracceAlDatabase = function (tracceDaInserire) {
     // Aggiorna contatori e filtri attivi
     if (typeof updateStat === "function") updateStat();
     if (typeof filter === "function") filter();
+}
+
+function toggleTheme() {
+    const body = document.body;
+    
+    // 2. Troviamo quale tema è attualmente attivo sul body
+    let temaAttuale = 'dark'; // Di default se non ci sono classi
+    
+    if (body.classList.contains('light-mode')) temaAttuale = 'light';
+    
+    // 3. Calcoliamo l'indice del prossimo tema
+    let indiceAttuale = listaTemi.indexOf(temaAttuale);
+    let prossimoIndice = (indiceAttuale + 1) % listaTemi.length; // Ricomincia da 0 alla fine del ciclo
+    let prossimoTema = listaTemi[prossimoIndice];
+    
+    // 4. Puliamo TUTTE le classi dei temi precedenti dal body
+    body.classList.remove('light-mode');
+    
+    // 5. Applichiamo la classe del nuovo tema (se diverso da 'dark' che è quello nativo)
+    if (prossimoTema !== 'dark') {
+        body.classList.add(`${prossimoTema}-mode`);
+    }
+    
+    // 6. Salviamo la scelta in memoria per non perderla al riavvio dell'app
+    localStorage.setItem('app-karaoke-theme', prossimoTema);
+    
+    // Opzionale: mostra un piccolo feedback in console per il debug
+    console.log(`Tema cambiato in: ${prossimoTema}`);
+}
+
+// 7. Funzione aggiornata per caricare il tema corretto all'avvio dell'app
+function caricaTemaPredefinito() {
+    const salvato = localStorage.getItem('app-karaoke-theme') || 'dark';
+    document.body.classList.remove('light-mode');
+    
+    if (salvato !== 'dark') {
+        document.body.classList.add(`${salvato}-mode`);
+    }
 }
 
 // Avvio rapido non appena la struttura del DOM è pronta
