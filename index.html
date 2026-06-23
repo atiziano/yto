@@ -23,7 +23,10 @@
         <div class="top-right" style="position: relative;">
             
             <div class="filler-row">
-                <button class="mini-btn" title="Mostra player" onclick="mostraPlayer()">📺</button>
+                <button class="mini-btn" title="Mostra player" 
+                        onclick="const yp = document.getElementById('youtube-player'); switchPlayer(yp && yp.style.display !== 'none' ? 'youtube' : 'locale', false);">
+                    📺
+                </button>
                 <button class="mini-btn" id="btn-console" title="Apre la console (Click destro per Manutenzione)" onclick="apriConsoleWebview()">🛠️</button>
             </div>
 
@@ -211,13 +214,30 @@
         </div>
 
         <main id="content-area">
-            <section id="riquadro-player-cyber" style="display: none">
-                <div id="player-placeholder">
-                    <span style="font-size: 48px; margin-bottom: 10px;">📺</span>
-                    <p style="font-size: 15px; font-weight: 500;">Pronto per l'esibizione. Scegli una traccia dalla griglia sotto!</p>
+            
+            <section id="riquadro-player-cyber" style="display: none;">
+
+                <div id="player-nav-capsule" style="position: absolute; top: 15px; right: 15px; display: flex; align-items: center; gap: 12px; padding: 6px 12px; background-color: var(--bg-base); border: 1px solid var(--border-color); border-radius: 50px; z-index: 10005; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                    
+                    <button id="btn-back" title="Indietro" class="close-player" style="position: relative; right: auto !important; top: auto !important; background: transparent !important; border: none !important;"
+                            onclick="const ypb = document.getElementById('youtube-player'); if (ypb && ypb.style.display !== 'none') { ypb.executeScript({ code: 'window.history.back();' }); }">
+                        &#x2039;
+                    </button>
+
+                    <button id="btn-forward" title="Avanti" class="close-player" style="position: relative; right: auto !important; top: auto !important; background: transparent !important; border: none !important;" 
+                            onclick="const ypf = document.getElementById('youtube-player'); if (ypf && ypf.style.display !== 'none') { ypf.executeScript({ code: 'window.history.forward();' }); }">
+                        &#x203a;
+                    </button>
+
+                    <button title="Chiudi" class="close-player" style="position: relative; right: auto !important; top: auto !important; background: transparent !important; border: none !important;"
+                            onclick="document.getElementById('riquadro-player-cyber').style.display = 'none'; document.getElementById('vid').pause(); document.getElementById('suono').pause();">
+                        &times;
+                    </button>
                 </div>
+
                 <audio id="suono" loop></audio>
                 <video id="vid" controls crossorigin="anonymous"></video>
+                
                 <webview 
                     id="youtube-player" 
                     partition="trusted"
@@ -228,6 +248,7 @@
                 </webview>
 
             </section>
+
             <div class="top-center">
                 <div class="search-box-wrapper">
                     <label class="upload-btn" title="Carica Intera Cartella">

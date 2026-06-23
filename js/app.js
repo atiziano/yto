@@ -217,6 +217,7 @@ function mostraInGriglia(arrayBasi) {
             } else if (window.parent && typeof window.parent.play === 'function') {
                 window.parent.play(base.pathCompleto, li);
             }
+            switchPlayer(base.tipo);
         };
         
         container.appendChild(li);
@@ -225,25 +226,6 @@ function mostraInGriglia(arrayBasi) {
 
 // Esponiamo la funzione globalmente
 window.mostraInGriglia = mostraInGriglia;
-
-window.mostraPlayer = function() {
-    const riquadroPlayer = document.getElementById('riquadro-player-cyber');
-    
-    if (riquadroPlayer) {
-        // Controlliamo lo stile inline attuale
-        if (riquadroPlayer.style.display === 'none' || riquadroPlayer.style.display === '') {
-            // SE È NASCOSTO: Lo mostriamo
-            riquadroPlayer.style.display = 'block'; // o 'flex', a seconda del tuo layout
-            
-            setTimeout(() => {
-                riquadroPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
-        } else {
-            // SE È VISIBILE: Lo nascondiamo
-            riquadroPlayer.style.display = 'none';
-        }
-    }
-}
 
 /**
  * Gestisce la visibilità della modale di caricamento.

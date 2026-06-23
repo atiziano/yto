@@ -151,7 +151,7 @@ function aggiornaInterfacciaRicerca(risultati) {
 }
 window.aggiornaInterfacciaRicerca = aggiornaInterfacciaRicerca;
 
-function switchPlayer(tipoTarget) {
+function switchPlayer(tipoTarget='locale', always=true) {
     const placeholder = document.getElementById('player-placeholder');
 
     console.log(`🎛️ [Interruttore] Switch a caldo richiesto su: ${tipoTarget}`);
@@ -175,6 +175,14 @@ function switchPlayer(tipoTarget) {
         
         // Portiamo in primo piano la webview
         window.yto.players.youtube.style.display = "block";
+
+        // Mostra pulsanti avanti e indietro
+        const btnBack = document.getElementById('btn-back');
+        const btnForward = document.getElementById('btn-forward');
+        if (btnBack && btnForward) {
+            btnBack.style.display = "flex";
+            btnForward.style.display = "flex";
+        }
         
     } else if (tipoTarget === 'locale') {
         // --- PASSAGGIO A LOCALE ---
@@ -184,6 +192,37 @@ function switchPlayer(tipoTarget) {
         
         // Mostriamo il player locale offline
         window.yto.players.video.style.display = "block";
+
+        // Nasconde pulsanti avanti e indietro
+        const btnBack = document.getElementById('btn-back');
+        const btnForward = document.getElementById('btn-forward');
+        if (btnBack && btnForward) {
+            btnBack.style.display = "none";
+            btnForward.style.display = "none";
+        }
+
+    }
+
+    // Mostra il player
+    if (tipoTarget === 'youtube' || tipoTarget === 'locale') {
+
+        const riquadroPlayer = document.getElementById('riquadro-player-cyber');
+    
+        if (riquadroPlayer) {
+            // Se always è true, forza l'apertura a prescindere da tutto
+            if (always === true) {
+                riquadroPlayer.style.display = 'flex';
+                return; // Esci subito dalla funzione
+            }
+
+            // Altrimenti (se always è false), fa il normale Toggle (mostra/nascondi)
+            if (riquadroPlayer.style.display === 'none' || riquadroPlayer.style.display === '') {
+                riquadroPlayer.style.display = 'flex'; // Usiamo 'flex' come da tuo CSS aggiornato
+            } else {
+                riquadroPlayer.style.display = 'none';
+            }
+        }
+
     }
 }
 window.switchPlayer = switchPlayer;

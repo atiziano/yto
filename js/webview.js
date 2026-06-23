@@ -147,7 +147,7 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
             if (!badgePercentuale) {
                 badgePercentuale = document.createElement('span');
                 badgePercentuale.className = 'percentuale-card';
-                badgePercentuale.style = "position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fbbf24; padding:2px 4px; font-size:11px; border-radius:3px; font-weight:bold; z-index:11;";
+                badgePercentuale.style = "position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fbbf24; padding:2px 4px; font-size:11px; border-radius:3px; font-weight:bold; z-index:2;";
                 cardInDownload.querySelector('.thumb-wrapper').appendChild(badgePercentuale);
             }
             badgePercentuale.innerText = `📥 ${percentuale}%`;
