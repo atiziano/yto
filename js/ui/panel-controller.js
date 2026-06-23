@@ -176,6 +176,13 @@ function switchPlayer(tipoTarget='locale', always=true) {
         // Portiamo in primo piano la webview
         window.yto.players.youtube.style.display = "block";
 
+        // Focus
+        setTimeout(() => {
+            if (window.yto.players.youtube) {
+                window.yto.players.youtube.focus();
+            }
+        }, 50);
+
         // Mostra pulsanti avanti e indietro
         const btnBack = document.getElementById('btn-back');
         const btnForward = document.getElementById('btn-forward');
