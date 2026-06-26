@@ -31,27 +31,28 @@ function renderSingers() {
         </div>`;
         uiList.appendChild(li);
     });
+    countDisplay.style.display = list.length === 0 ? 'none' : 'block';
+
 }
 
 /**
  * Aggiunge un nuovo cantante alla lista e aggiorna il contatore
  */
-function addSinger() {
-    const input = document.getElementById('newSingerName');
-    if (!input.value.trim()) return;
-    const list = JSON.parse(localStorage.getItem('karaoke_singers')) || [];
-    list.push({ name: input.value.trim(), done: false });
-    localStorage.setItem('karaoke_singers', JSON.stringify(list));
-    input.value = "";
+function addSinger(newName) {
     
-    renderSingers();
-
-   // Scroll automatico DOPO il render
-    setTimeout(() => {
-        const panel = document.querySelector("#singer-panel .panel-scroll");
-        panel.scrollTop = panel.scrollHeight;
-    }, 0);
+    if (newName !== null && newName.trim() !== "") {
+        const list = JSON.parse(localStorage.getItem('karaoke_singers')) || [];
+        list.push({ name: newName.trim(), done: false });
+        localStorage.setItem('karaoke_singers', JSON.stringify(list));
         
+        renderSingers();
+
+    // Scroll automatico DOPO il render
+        setTimeout(() => {
+            const panel = document.querySelector("#singer-panel .panel-scroll");
+            panel.scrollTop = panel.scrollHeight;
+        }, 0);
+    }
 }
 
 /**
@@ -80,9 +81,15 @@ function selectAll() {
  */
 function deleteSelected() {
     let list = JSON.parse(localStorage.getItem('karaoke_singers')) || [];
+    
+    // 1. Filtriamo tenendo solo chi NON è selezionato (i sopravvissuti)
     const filtered = list.filter(i => !i.done);
-    if (confirm("Cancellare i selezionati?")) {
-        localStorage.setItem('karaoke_singers', JSON.stringify(filtered));
-        renderSingers();
+    
+    // 2. Se la lunghezza di 'filtered' è diversa da 'list', significa che c'era qualcuno da cancellare!
+    if (filtered.length < list.length) { 
+        if (confirm("Cancellare i selezionati?")) {
+            localStorage.setItem('karaoke_singers', JSON.stringify(filtered));
+            renderSingers();
+        }
     }
 }

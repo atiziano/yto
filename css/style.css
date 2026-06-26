@@ -4,18 +4,60 @@
 
 :root {
     /* ==========================================
-       TEMA PREDEFINITO: DARK MODE (Cyberpunk)
+       TEMA PREDEFINITO: LIGHT MODE
        ========================================== */
+    --bg-base: #f1f5f9;           /* Sfondo principale chiaro */
+    --bg-header: #ffffff;         /* Barra superiore bianca */
+    --bg-sidebar: #e2e8f0;        /* Sidebar grigio-azzurra */
+    --bg-surface: #ffffff;        /* Superficie delle card bianca */
+    --bg-input: #f8fafc;          /* Input box chiarissimo */
+    --bg-panel: #ffffff;          /* Pannelli hardware bianchi */
+    --bg-search: #d0eb36;         /* Giallo evidenziatore (rimane invariato) */
+    
+    /* ACCENTI ADATTATI AL CHIARO */
+    --accent-red: #ff0000;
+    --accent: #7c3aed;            /* Viola più saturo e scuro per leggerlo sul chiaro */
+    --accent-hover: #6d28d9;      /* Viola scuro per gli stati hover */
+    --success: #059669;           /* Verde smeraldo scuro */
+    --danger: #dc2626;            /* Rosso scuro */
+    
+    /* TESTI E BORDI INVERTITI */
+    --text-primary: #0f172a;      /* Testo scuro Blu-Notte */
+    --text-secondary: #475569;    /* Testo secondario ardesia */
+    --text-muted: #64748b;        
+    --text-search: #0d0e0b;
+    --border-main: #cbd5e1;       /* Bordi grigi leggeri */
+    --border-color: #94a3b8;      
+    
+    /* VARIABILI PER SCROLLBAR E MENU SEGRETI ADATTATI AL CHIARO */
+    --bg-scrollbar: #cbd5e1;
+    --bg-scrollbar-hover: #94a3b8;
+    --bg-dropdown: #ffffff;
+    --border-dropdown: #cbd5e1;
+    --text-dropdown-hover: #7c3aed;
+    
+    /* SWITCH (PREDEFINITO CHIARO - OFF GRIGIO / ON AZZURRO) */
+    --switch-on-color: #007aff;
+    --switch-off-color: #e2e8f0;
+
+    --radius: 12px;
+    --shadow: 0 10px 20px rgba(15, 23, 42, 0.06); /* Ombra molto morbida */
+    --yt-font: "Roboto", "Arial", sans-serif;
+}
+
+/* ==========================================
+   SOVRASCRITTURA PER DARK MODE (Cyberpunk)
+   (Si attiva aggiungendo la classe al body)
+   ========================================== */
+body.dark-mode {
     --bg-base: #0f172a;           /* Sfondo principale scuro */
     --bg-header: #1e293b;         /* Barra superiore scura */
     --bg-sidebar: #1e293b;        /* Sidebar scura */
     --bg-surface: #1e293b;        /* Superficie delle card e pannelli */
     --bg-input: #0f172a;          /* Input box e select scuri */
     --bg-panel: #1e293b;          /* Pannelli hardware scuri */
-    --bg-search: #d0eb36;         /* Giallo evidenziatore (rimane invariato) */
     
     /* ACCENTI E COLORI LIVE */
-    --accent-red: #ff0000;
     --accent: #a78bfa;            /* Viola più chiaro/neon per il dark mode */
     --accent-hover: #c084fc;
     --success: #10b981;
@@ -25,7 +67,6 @@
     --text-primary: #f8fafc;      /* Testo chiaro su fondo scuro */
     --text-secondary: #94a3b8;    /* Testo grigio secondario */
     --text-muted: #64748b;
-    --text-search: #0d0e0b;
     --border-main: #334155;       /* Bordi scuri ma visibili */
     --border-color: #475569;
     
@@ -35,45 +76,12 @@
     --bg-dropdown: #1e222b;
     --border-dropdown: #3f4452;
     --text-dropdown-hover: #ffffff;
-    
-    --radius: 12px;
-    --shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-    --yt-font: "Roboto", "Arial", sans-serif;
-}
 
-/* ==========================================
-   SOVRASCRITTURA PER LIGHT MODE 
-   (Si attiva aggiungendo la classe al body)
-   ========================================== */
-body.light-mode {
-    --bg-base: #f1f5f9;           /* Sfondo principale chiaro */
-    --bg-header: #ffffff;         /* Barra superiore bianca */
-    --bg-sidebar: #e2e8f0;        /* Sidebar grigio-azzurra */
-    --bg-surface: #ffffff;        /* Superficie delle card bianca */
-    --bg-input: #f8fafc;          /* Input box chiarissimo */
-    --bg-panel: #ffffff;          /* Pannelli hardware bianchi */
-    
-    /* ACCENTI ADATTATI AL CHIARO */
-    --accent: #7c3aed;            /* Viola più saturo e scuro per leggerlo sul chiaro */
-    --accent-hover: #6d28d9;      /* Viola scuro per gli stati hover */
-    --success: #059669;           /* Verde smeraldo scuro */
-    --danger: #dc2626;            /* Rosso scuro */
-    
-    /* TESTI E BORDI INVERTITI */
-    --text-primary: #0f172a;      /* Testo scuro Blu-Notte */
-    --text-secondary: #475569;    /* Testo secondario ardesia */
-    --text-muted: #64748b;        /* */
-    --border-main: #cbd5e1;       /* Bordi grigi leggeri */
-    --border-color: #94a3b8;      /* */
-    
-    /* VARIABILI PER SCROLLBAR E MENU SEGRETI ADATTATI AL CHIARO */
-    --bg-scrollbar: #cbd5e1;
-    --bg-scrollbar-hover: #94a3b8;
-    --bg-dropdown: #ffffff;
-    --border-dropdown: #cbd5e1;
-    --text-dropdown-hover: #7c3aed;
-    
-    --shadow: 0 10px 20px rgba(15, 23, 42, 0.06); /* Ombra molto morbida */
+    /* SWITCH (VERSIONE DARK) */
+    --switch-on-color: #216b8c;
+    --switch-off-color: #2a2a2a;
+
+    --shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -125,7 +133,11 @@ body {
     border-radius: 50%;
     transition: background 0.2s;
 }
-#menu-toggle:hover { background: var(--bg-sidebar); } /* DINAMICO: ex #272727 */
+
+#menu-toggle:hover { 
+    background: var(--bg-sidebar); 
+    border-radius: 20% !important; /* Forza il cerchio perfetto anche sullo sfondo dell'hover */
+}
 
 .logo-container {
     display: flex;
@@ -302,13 +314,17 @@ body {
 
 .sidebar-scrollable-content {
     flex-grow: 1;
-    overflow-y: auto;
+    overflow-y: auto;    /* Consente lo scorrimento verticale se i pannelli sono tanti */
+    overflow-x: hidden;  /* Blocca categoricamente lo scorrimento orizzontale */
+    padding-left: 4px;   /* Bilancia il contenuto al centro */
     padding-right: 4px;
 }
+
 .sidebar-section {
     padding: 12px 0;
     border-bottom: 1px solid var(--border-main); /* DINAMICO: ex #272727 */
 }
+
 .section-title {
     font-size: 12px;
     text-transform: uppercase;
@@ -436,34 +452,89 @@ body {
 /* BADGE DEI CANTANTI IN CODA */
 #singer-count-badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    /* Spinto leggermente più fuori per liberare l'icona interna */
+    top: -6px;
+    right: -6px;
+    
     background-color: var(--accent);
     color: white;
-    font-size: 10px;
+    font-size: 8px; /* Micro-font leggibile per i 24px del tasto */
     font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 20px;
-    border: 2px solid var(--bg-sidebar);
+    
+    /* Padding e dimensioni fisse per farlo rimanere un cerchio perfetto */
+    padding: 0;
+    width: 13px;
+    height: 13px;
+    line-height: 13px; /* Centra il numero in verticale */
+    text-align: center;/* Centra il numero in orizzontale */
+    
+    border-radius: 50%; /* Cerchio perfetto */
+    border: 1.5px solid var(--bg-sidebar); /* Bordo protettivo proporzionato */
+    
+    z-index: 10; 
 }
 
 /* ==========================================================================
    4. PANNELLI FLOATING (Mixer, Effetti, Cantanti e Cyber Studio)
    ========================================================================== */
-#mixer-panel, #pitch-panel, #singer-panel, .floating-youtube-panel, #studio-panel {
-    display: none; /* Gestito nativamente da JS */
+#mixer-panel, #pitch-panel, #singer-panel, #studio-panel, .floating-panel {
+    display: none;
     position: fixed;
-    bottom: 110px; /* Si ancora sopra le pulsantiere inferiori */
-    left: 275px;  /* Si apre esattamente a fianco della barra overlay aperta */
+    bottom: 110px; 
+    left: 275px;  
+    
     width: 320px;
+    min-width: 290px;  
+    max-width: 450px;  
+    
+    /* 🎯 MODIFICA 1: Il pannello principale non deve avere un'altezza fissa, 
+       ma si adatta (flex) fino a un massimo di 65vh */
+    height: auto;
+    max-height: 65vh;  
+    flex-direction: column;
+    
+    /* 🎯 MODIFICA 2: Rimosso lo scroll da qui, altrimenti scorre anche il titolo */
+    overflow: hidden; 
+
     background: var(--bg-surface);
     border: 1px solid var(--border-main);
     border-radius: 12px;
     padding: 16px;
-    z-index: 10010; /* Sta sopra alla barra di navigazione */
-    box-shadow: var(--shadow); /* DINAMICO: ex shadow fissa scura */
+    z-index: 10010; 
+    box-shadow: var(--shadow); 
     backdrop-filter: blur(10px);
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 🎯 MODIFICA 3: È questo contenitore che deve gestire lo scroll dei soli cursori! */
+.panel-scroll {
+    display: flex;         /* 🎯 Forza il flusso flex anche dentro lo scorrimento */
+    flex-direction: column;
+    gap: 12px;
+    
+    flex-grow: 1;          /* Prende lo spazio sotto al titolo */
+    height: 85%;          /* Sfrutta tutta l'altezza ereditata dal pannello */
+    
+    overflow-y: auto !important;  /* 🎯 !important forza l'apparizione se ci sono conflitti */
+    overflow-x: hidden;    
+    padding-right: 6px;    /* Leggermente aumentato per dare spazio alla barra */
+}
+
+.panel-header {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 15px;
+}
+
+.div-border-bottom {
+    display: flex; 
+    flex-direction: column; 
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 10px; 
+    margin-bottom: 15px; 
+    gap: 10px; 
+    flex-shrink: 0;
 }
 
 @keyframes slideUp {
@@ -530,12 +601,6 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     font-size: 13px;
 }
 
-.panel-scroll {
-    max-height: 250px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
 /* ==========================================================================
    5. RIGHT CONTENT VIEWPORT (CINEMA PLAYER + GRIGLIA VIDEO SOTTO)
    ========================================================================== */
@@ -559,7 +624,7 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
     left: 50%;
     transform: translate(-50%, -50%);
     width: 90vw;
-    height: 90vh;
+    height: 85vh;
     background-color: #0f172a; /* Questo conviene lasciarlo scuro nativo così il cinema-mode risalta */
     border: 2px solid var(--border-color); /* DINAMICO: ex #334155 */
     border-radius: 12px;
@@ -815,4 +880,99 @@ input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-hover
 .dropdown-menu-segreto .menu-item:hover {
     background-color: var(--bg-sidebar); /* DINAMICO: ex #2c313c */
     color: var(--text-dropdown-hover); /* DINAMICO: ex #ffffff */
+}
+
+/* Contenitore fisso esattamente AL CENTRO dello schermo */
+.toast-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* Centra perfettamente l'intero blocco sia in X che in Y */
+    transform: translate(-50%, -50%); 
+    z-index: 100000; 
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; 
+}
+
+/* Stile del Toast Singolo */
+.toast-item {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    padding: 14px 28px; /* Aumentato leggermente per dargli più importanza al centro */
+    border-radius: 8px;
+    font-family: var(--yt-font);
+    font-size: 15px;    /* Leggermente più grande, si legge meglio */
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+    
+    /* Usa la nuova animazione calibrata per il centro */
+    animation: toastCenterFadeInOut 2s ease-in-out forwards;
+}
+
+/* 🎯 NUOVA ANIMAZIONE COMPATIBILE CON IL CENTRO DELLO SCHERMO */
+@keyframes toastCenterFadeInOut {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.85); /* Parte leggermente rimpicciolito */
+    }
+    12% { 
+        opacity: 1; 
+        transform: scale(1);    /* Raggiunge la dimensione reale con un effetto pop */
+    }
+    88% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: scale(0.95) translateY(-10px); /* Svanisce salendo leggermente */
+    }
+}
+
+fieldset {
+    display: flex; 
+    flex-direction: column-reverse; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 2px 5px 1px 5px; 
+    border: 1px solid var(--border-main); 
+    border-radius: 6px; 
+    margin: 0; 
+    min-width: 0; 
+    height: fit-content; 
+    align-self: center; 
+    border-left: none; 
+    border-right: none; 
+    border-bottom: none;
+}
+
+fieldset[disabled] {
+    opacity: 0.4;          /* Rende tutto il contenuto semi-trasparente */
+    pointer-events: none;  /* Sicurezza extra: blocca qualsiasi interazione del mouse */
+    filter: grayscale(0.3);/* Opzionale: spegne leggermente la vivacità dei colori/emoji */
+    transition: opacity 0.2s ease; /* Rende l'attivazione/disattivazione fluida */
+}
+
+.reduce-btn {
+    width: 24px; 
+    height: 24px; 
+    padding: 0; 
+    font-size: 12px; 
+    line-height: 24px;
+}
+
+legend {
+    font-family: var(--yt-font), sans-serif; 
+    font-size: 8px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 0.8px; 
+    color: var(--text-secondary); 
+    padding: 0 4px; 
+    user-select: none; 
+    line-height: 1; 
+    margin: 0 auto -2px auto;
 }

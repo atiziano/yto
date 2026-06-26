@@ -32,22 +32,48 @@ function gestisciPannelli(panelId, btnId) {
 
     const isVis = target.style.display === 'block';
 
-    // Chiude tutti i pannelli e spegne i bottoni
+    // 1. Chiude tutti i pannelli, rimuove la classe attiva dei bordi e spegne i bottoni
     panels.forEach(id => {
         const p = document.getElementById(id);
-        if (p) {p.style.display = 'none'; p.style.border = 'none';}
+        if (p) {
+            p.style.display = 'none'; 
+            p.classList.remove('panel-active'); // 🎯 Rimuove l'illuminazione
+        }
     });
 
     buttons.forEach(id => {
         const b = document.getElementById(id);
-        if (b) {b.classList.remove('active'); b.style.border = 'none';}
+        if (b) {
+            b.classList.remove('active');
+            // Rimosso b.style.border = 'none' per non spaccare i bordi dei bottoni
+        }
     });
 
-    // Se il pannello era chiuso, lo apre e attiva il suo bottone
+    // 2. Se il pannello era chiuso, lo apre e accende i suoi bordi/bottoni
     if (!isVis) {
         target.style.display = 'block';
+        target.classList.add('panel-active'); // 🎯 Accende il bordo col colore del tema!
+        
         const btn = document.getElementById(btnId);
-        if (btn) btn.classList.add('active');
+        if (btn) {
+            btn.classList.add('active');
+
+            // 🎯 ANCORAGGIO DALL'ALTO: se il bottone cliccato fa parte della barra superiore
+            if (buttons.includes(btnId)) {
+                const rect = btn.getBoundingClientRect();
+                
+                target.style.position = 'absolute';
+                target.style.top = (rect.bottom + 4) + 'px'; // Si attacca 4px sotto il bottone
+                
+                // Opzione Allineamento a sinistra (il pannello parte allineato al bottone)
+                target.style.left = rect.left + 'px'; 
+                
+                // Se preferisci centrare il pannello rispetto al bottone, usa questo invece di rect.left:
+                // target.style.left = (rect.left + (rect.width / 2) - (target.offsetWidth / 2)) + 'px';
+
+                target.style.zIndex = '10010'; // Sopra a tutto il resto
+            }
+        }
     }
 }
 

@@ -20,6 +20,11 @@ try {
 // FUNZIONE IBRIDA COORDINATA: STREAMING IMMEDIATO + DOWNLOAD COMPLETO IN BACKGROUND
 // ====================================================================================
 window.caricaVideoYouTubeNelTagLocale = function (urlDirettoDaRicerca = null) {
+
+    if (!ytDlpWrap) {
+        console.error("❌ [Download] Motore yt-dlp non pronto.");
+        return;
+    }
     
     let urlVideo = urlDirettoDaRicerca.trim();
 
@@ -31,7 +36,7 @@ window.caricaVideoYouTubeNelTagLocale = function (urlDirettoDaRicerca = null) {
 
     const isValidoYouTube = urlVideo.includes('youtube.com') || urlVideo.includes('youtu.be');
     if (!urlVideo || !isValidoYouTube) {
-        alert("Per favore, seleziona prima un video valido su YouTube!");
+        window.mostraTost("🎵 Selezionare prima un video valido su YouTube!");
         return;
     }
 
@@ -48,6 +53,8 @@ window.caricaVideoYouTubeNelTagLocale = function (urlDirettoDaRicerca = null) {
     const comandoEstrattore = `${percorsoEseguibileYtdlp} --no-update --js-runtimes node --extractor-args "youtube:player_client=android" -f "best[ext=mp4]" -g "${urlVideo}"`;
     
     console.log("🔍 [Streaming] Estrazione con parametri Android...");
+
+    window.mostraTost("Streaming avviato...");
 
     exec(comandoEstrattore, (error, stdout, stderr) => {
         const playerVideoLoco = window.parent.document.getElementById('vid') || document.getElementById('vid');
@@ -86,6 +93,19 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
         return;
     }
 
+
+    if (urlVideo && urlVideo.length === 11 && !urlVideo.includes('://')) {
+        urlVideo = `https://www.youtube.com/watch?v=${urlVideo}`;
+    }
+
+    if (urlVideo.includes('&')) urlVideo = urlVideo.split('&')[0];
+
+    const isValidoYouTube = urlVideo.includes('youtube.com') || urlVideo.includes('youtu.be');
+    if (!urlVideo || !isValidoYouTube) {
+        window.mostraTost("⚡ Selezionare prima un video valido su YouTube!");
+        return;
+    }
+
     const cartellaDestinazione = path.join(process.cwd(), 'songs');
     const cartellaBin = path.join(process.cwd(), 'bin', 'yt');
     const cartellaTempVideo = path.join(cartellaBin, 'temp_video');
@@ -104,8 +124,8 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
     if (fs.existsSync(vecchioTempPart)) fs.unlinkSync(vecchioTempPart);
 
     // Usa il titolo reale della canzone nella notifica iniziale se disponibile!
-    if (notificaUI) notificaUI.innerText = `📥 Avvio download: ${titoloLog}...`;
-    console.log(`📥 [Download Background] Avviato scaricamento sicuro per: ${titoloLog}`);
+    if (notificaUI) notificaUI.innerText = `⚡ Avvio download: ${titoloLog}...`;
+    console.log(`⚡ [Download Background] Avviato scaricamento sicuro per: ${titoloLog}`);
 
     // Prepariamo i parametri - Rimossa la thumbnail da qui perché la gestiamo via HTTPS nel 'close'
     const argomenti = [
@@ -120,6 +140,8 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
         '--no-cache-dir',
         '-o', vecchioTemp                                    // 🎯 Scarica sempre su un file temporaneo fisso
     ];
+
+    window.mostraTost("Downlaod avviato...");
 
     ytDlpWrap.exec(argomenti)
     .on('progress', (progress) => {
@@ -136,7 +158,7 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
         if (percentuale < 0 || isNaN(percentuale)) percentuale = 0;
         
         // 1. Aggiorna il testo globale
-        if (notificaUI) notificaUI.innerText = `📥 Scaricamento: ${percentuale}%`;
+        if (notificaUI) notificaUI.innerText = `⚡ Scaricamento: ${percentuale}%`;
 
         // 2. AGGIORNAMENTO CARD IN TEMPO REALE
         const cardInDownload = document.querySelector(`#myUL li[data-url="${urlVideo}"]`);
@@ -150,7 +172,7 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
                 badgePercentuale.style = "position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fbbf24; padding:2px 4px; font-size:11px; border-radius:3px; font-weight:bold; z-index:2;";
                 cardInDownload.querySelector('.thumb-wrapper').appendChild(badgePercentuale);
             }
-            badgePercentuale.innerText = `📥 ${percentuale}%`;
+            badgePercentuale.innerText = `⚡ ${percentuale}%`;
         }
     })
     .on('error', (err) => {
@@ -189,7 +211,7 @@ window.avviaDownloadDaYouTube = async function (urlVideo, opzioni = {}) {
                     });
                 }
 
-                if (notificaUI) notificaUI.innerText = "📥 Download completato!";
+                if (notificaUI) notificaUI.innerText = "⚡ Download completato!";
 
                 // PASSA SIA L'URL ORIGINALE CHE IL PERCORSO MP4 DEFINITIVO
                 if (typeof trasformaTracciaInLocale === "function") {

@@ -462,39 +462,73 @@ window.aggiungiTracceAlDatabase = function (tracceDaInserire) {
 function toggleTheme() {
     const body = document.body;
     
-    // 2. Troviamo quale tema è attualmente attivo sul body
-    let temaAttuale = 'dark'; // Di default se non ci sono classi
+    // 1. Troviamo quale tema è attualmente attivo (Ora il predefinito senza classe è 'light')
+    let temaAttuale = body.classList.contains('dark-mode') ? 'dark' : 'light';
     
-    if (body.classList.contains('light-mode')) temaAttuale = 'light';
-    
-    // 3. Calcoliamo l'indice del prossimo tema
+    // 2. Calcoliamo il prossimo tema basandoci sulla lista dei temi
     let indiceAttuale = listaTemi.indexOf(temaAttuale);
-    let prossimoIndice = (indiceAttuale + 1) % listaTemi.length; // Ricomincia da 0 alla fine del ciclo
+    let prossimoIndice = (indiceAttuale + 1) % listaTemi.length;
     let prossimoTema = listaTemi[prossimoIndice];
     
-    // 4. Puliamo TUTTE le classi dei temi precedenti dal body
-    body.classList.remove('light-mode');
-    
-    // 5. Applichiamo la classe del nuovo tema (se diverso da 'dark' che è quello nativo)
-    if (prossimoTema !== 'dark') {
+    // 3. Applichiamo la classe al body (Rimuoviamo la vecchia classe dark)
+    body.classList.remove('dark-mode');
+    if (prossimoTema !== 'light') {
         body.classList.add(`${prossimoTema}-mode`);
     }
+
+    // 🎯 4. AGGIORNAMENTO GRAFICO DELLO SWITCH (ON = Dark Mode / OFF = Light Mode)
+    const knob = document.getElementById('btn-theme-knob');
+    const track = document.getElementById('theme-switch-track');
+
+    if (knob && track) {
+        if (prossimoTema === 'dark') {
+            // STATO ON (A destra): Attiviamo la modalità scura/cyberpunk
+            knob.style.left = '20px';
+            track.style.background = 'var(--switch-on-color)';
+        } else {
+            // STATO OFF (A sinistra): Torniamo alla modalità chiara predefinita
+            knob.style.left = '2px';
+            track.style.background = 'var(--switch-off-color)'; 
+        }
+    }
     
-    // 6. Salviamo la scelta in memoria per non perderla al riavvio dell'app
+    // 5. Salviamo in memoria
     localStorage.setItem('app-karaoke-theme', prossimoTema);
-    
-    // Opzionale: mostra un piccolo feedback in console per il debug
     console.log(`Tema cambiato in: ${prossimoTema}`);
 }
 
-// 7. Funzione aggiornata per caricare il tema corretto all'avvio dell'app
+// Funzione aggiornata per caricare il tema corretto all'avvio dell'app
 function caricaTemaPredefinito() {
-    const salvato = localStorage.getItem('app-karaoke-theme') || 'dark';
-    document.body.classList.remove('light-mode');
-    
-    if (salvato !== 'dark') {
-        document.body.classList.add(`${salvato}-mode`);
+
+    const temaIniziale = localStorage.getItem('app-karaoke-theme') || 'light';
+    if (temaIniziale === 'dark') {
+        document.body.classList.add('dark-mode');
+        const knob = document.getElementById('btn-theme-knob');
+        const track = document.getElementById('theme-switch-track');
+        if (knob && track) {
+            knob.style.left = '20px';
+            track.style.background = 'var(--switch-on-color)';
+        }
     }
+
+}
+
+window.mostraTost = function (messaggio) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    // Crea l'elemento del toast
+    const toast = document.createElement('div');
+    toast.className = 'toast-item';
+    toast.innerHTML = `${messaggio}`; // Usiamo il fulmine nitido che ti piaceva!
+
+    // Lo aggiunge al contenitore
+    container.appendChild(toast);
+
+    // Lo rimuove dal DOM dopo esattamente 2 secondi (durata dell'animazione)
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
 }
 
 // Avvio rapido non appena la struttura del DOM è pronta

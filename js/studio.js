@@ -275,18 +275,27 @@ async function toggleStudioGenerativo() {
             }
             
             studioAttivo = true;
-            if (btn) btn.innerHTML = "&#x25A0;"; // Mostra il quadratino di STOP
+            
+            // 🎯 Cambia l'icona in STOP (quadrato) e la scritta in "Stop"
+            if (btn) {
+                btn.innerHTML = `<span style="color: red; font-weight: bold;">&#x25A0;</span>&nbsp;Stop`;
+            }
+            
             console.log("🚀 Cyber Studio Avviato con successo!");
         } catch (error) {
             console.error("Errore nell'avvio dello Studio:", error);
-            if (btn) btn.innerHTML = "&#x25B6;";
+            
+            // 🎯 In caso di errore ripristina il PLAY blu originale e la scritta "Play"
+            if (btn) {
+                btn.innerHTML = `<span style="color: blue; font-weight: bold;">&#x25B6;</span>&nbsp;Play`;
+            }
         }
     } else {
         if (studioLoop) {
             studioLoop.stop();
         }
         studioAttivo = false;
-        if (btn) btn.innerHTML = "&#x25B6;"; // Torna al simbolo PLAY
+        if (btn) btn.innerHTML = `<span style="color: blue; font-weight: bold;">&#x25B6;</span>&nbsp;Play`;
         console.log("🎛Header; Studio Generativo in pausa.");
     }
 }

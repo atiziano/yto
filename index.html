@@ -13,21 +13,77 @@
 
     <header id="youtube-top-bar">
         <div class="top-left">
-            <button id="menu-toggle" title="Menu">☰</button>
+            <button id="menu-toggle" title="Impostazioni">☰</button>
             <div class="logo-container">
-                <span class="logo-text" title="Cambia tema" style="cursor: pointer;" onclick="toggleTheme();">YouTube<span class="logo-badge">Offline</span></span>
+                <span class="logo-text">YouTube<span class="logo-badge">Offline</span></span>
             </div>
             <button class="mini-btn" id="btn-refresh" title="Ricarica applicazione" onclick="nw.Window.get().reload();">&#x21BB;</button>
-        </div>
+            
+            <button class="mini-btn" title="Mostra player" 
+                    onclick="const yp = document.getElementById('youtube-player'); switchPlayer(yp && yp.style.display !== 'none' ? 'youtube' : 'locale', false);">
+                📺
+            </button>
+
+        </div>        
         
+        <div style="width: 100%; height: 3px; background: var(--bg-input); overflow: hidden; position: absolute; bottom: 0; left: 0;">
+            <div id="meterBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00e676, #ffeb3b, #ff5252); transition: width 0.05s;"></div>
+        </div>
 
         <div class="top-right" style="position: relative;">
             
             <div class="filler-row">
-                <button class="mini-btn" title="Mostra player" 
-                        onclick="const yp = document.getElementById('youtube-player'); switchPlayer(yp && yp.style.display !== 'none' ? 'youtube' : 'locale', false);">
-                    📺
-                </button>
+            <fieldset>
+                <legend>Strumenti</legend>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <button class="mini-btn reduce-btn" id="mixer-toggle" title="Mixer Volume" onclick="gestisciPannelli('mixer-panel', 'mixer-toggle')">🎛️</button>
+                    <button class="mini-btn reduce-btn" id="pitch-toggle" title="Effetti Base" onclick="gestisciPannelli('pitch-panel', 'pitch-toggle')">✨</button>
+                    <button class="mini-btn reduce-btn" id="studio-toggle" title="Cyber Studio" onclick="gestisciPannelli('studio-panel', 'studio-toggle')">🎹</button>
+                    <button class="mini-btn reduce-btn" id="singer-toggle" title="Lista Persone" onclick="gestisciPannelli('singer-panel', 'singer-toggle')" style="position:relative;">📝 <div id="singer-count-badge">0</div></button>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Sorgenti</legend>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    
+                    <input class="mini-btn reduce-btn" id="url-download" type="text" placeholder="Link YouTube..." style="width: 120px; font-size: 11px; padding: 0 6px;">
+
+                    <button class="mini-btn reduce-btn" id="btn-switch-youtube" title="Passa a YouTube" onclick="switchPlayer('youtube')" style="padding: 0; width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #ff0000; border: none; border-radius: 5px; cursor: pointer;">
+                        <div style="width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 7px solid #ffffff; margin-left: 2px;"></div>
+                    </button>
+
+                    <button class="mini-btn reduce-btn" id="btn-switch-locale" title="Passa a Video Locali" onclick="switchPlayer('locale')" style="padding: 0; width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #0284c7; border: none; border-radius: 5px; cursor: pointer;">
+                        <div style="width: 13px; height: 10px; border: 1.5px solid #ffffff; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 0; height: 0; border-top: 2px solid transparent; border-bottom: 2px solid transparent; border-left: 4px solid #ffffff; margin-left: 1px;"></div>
+                        </div>
+                    </button>
+
+                    <button class="mini-btn reduce-btn" id="start-streaming" title="Avvia Streaming Live" onclick="caricaVideoYouTubeNelTagLocale(document.getElementById('url-download').value)">🎵</button>
+                    
+                    <button class="mini-btn reduce-btn" id="start-download" title="Avvia Download" onclick="avviaDownloadDaYouTube(document.getElementById('url-download').value)">⚡</button>
+
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Sottofondo</legend>
+                
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    
+                    <label class="mini-btn reduce-btn" title="Seleziona mp3 di sottofondo" style="display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;">
+                        📁 <input type="file" accept="audio/*,video/mp4" onchange="loadSingleFiller(this)" style="display: none;">
+                    </label>
+                    
+                    <input class="mini-btn reduce-btn" id="fillerTitle" type="text" placeholder="Nessuno..." readonly style="width: 120px; font-size: 11px; padding: 0 6px;">
+                    
+                    <button class="mini-btn reduce-btn" id="btn-filler-play" title="Avvia sottofondo" onclick="controlFiller('play')">▶</button>
+                    
+                    <button class="mini-btn reduce-btn" id="btn-filler-stop" title="Ferma sottofondo" onclick="controlFiller('stop')">⏹</button>
+                    
+                </div>
+            </fieldset>
+
                 <button class="mini-btn" id="btn-console" title="Apre la console (Click destro per Manutenzione)" onclick="apriConsoleWebview()">🛠️</button>
             </div>
 
@@ -43,66 +99,57 @@
         
         <aside id="sidebar" class="sidebar-hidden">
             <div class="sidebar-scrollable-content">
-                
-                <div class="sidebar-section">
-                    <div style="width:100%; height:6px; background: var(--bg-input); border-radius:10px; overflow:hidden;">
-                        <div id="meterBar" style="width:0%; height:100%; background:linear-gradient(90deg, #00e676, #ffeb3b, #ff5252); transition: width 0.1s;"></div>
-                    </div>
-                </div>
 
-                <!-- ================= SEZIONE STRUMENTI DI CONTROLLO ================= -->
-                <div class="sidebar-section">
-                    <h4 class="section-title">Strumenti di Controllo</h4>
-                    <div class="controls-vertical-grid">
-                        <button id="mixer-toggle" class="btn-fx" onclick="gestisciPannelli('mixer-panel', 'mixer-toggle')">🎛️ Mixer Volume</button>
-                        <button id="pitch-toggle" class="btn-fx" onclick="gestisciPannelli('pitch-panel', 'pitch-toggle')">✨ Effetti Base</button>
-                        <button id="studio-toggle" class="btn-fx" onclick="gestisciPannelli('studio-panel', 'studio-toggle')">🎹 Cyber Studio</button>
-                        <button id="singer-toggle" class="btn-fx" onclick="gestisciPannelli('singer-panel', 'singer-toggle')" style="position:relative;">
-                            📝 Lista Persone <div id="singer-count-badge">0</div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- ================= SEZIONE YOUTUBE ================= -->
-                <div class="sidebar-section">
-                    <h4 class="section-title">Sorgenti Video</h4>
-                    <div class="filler-row">
-                        <input class="mini-btn" type="text" id="url-download" placeholder="Link YouTube..." readonly>
-                        <button id="btn-switch-youtube" class="btn-fx" title="Passa a YouTube" onclick="switchPlayer('youtube')" 
-                                style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #ff0000; border: none; border-radius: 8px; cursor: pointer;">
-                            <div style="width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #ffffff; margin-left: 3px;"></div>
-                        </button>
-                        <button id="btn-switch-locale" class="btn-fx" title="Passa a Video Locali" onclick="switchPlayer('locale')" 
-                                style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: #0284c7; border: none; border-radius: 8px; cursor: pointer;">
-                            <div style="width: 16px; height: 12px; border: 2px solid #ffffff; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
-                                <div style="width: 0; height: 0; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 5px solid #ffffff; margin-left: 1px;"></div>
-                            </div>
-                        </button>
-                        <button id="start-streaming" class="btn-fx" title="Avvia Streaming Live" onclick="caricaVideoYouTubeNelTagLocale(document.getElementById('url-download').value)" style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📡</button>
-                        <button id="start-download" class="btn-fx" title="Avvia Download" onclick="avviaDownloadDaYouTube(document.getElementById('url-download').value)" style="padding: 0; width: 36px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📥</button>
-
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Sottofondo alla fine -->
+            <!-- ================= SEZIONE ================= -->
             <div class="sidebar-section">
-                <h4 class="section-title">Sottofondo Musicale</h4>
-                <div class="filler-row">
-                    <label class="mini-btn" title="Seleziona mp3 di sottofondo">
-                        📁 <input type="file" accept="audio/*,video/mp4" onchange="loadSingleFiller(this)" style="display:none;">
-                    </label>
-                    <input type="text" id="fillerTitle" placeholder="Nessuno..." readonly>
-                    <button id="btn-filler-play" class="mini-btn" title="Avvia sottofondo" onclick="controlFiller('play')">▶</button>
-                    <button id="btn-filler-stop" class="mini-btn" title="Ferma sottofondo" onclick="controlFiller('stop')">⏹</button>
+                <h4 class="section-title" style="margin-bottom: 12px;">Personalizzazione</h4>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px;">
+                    <span style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Modalità scura</span>
+                    
+                    <div id="theme-switch-track" onclick="toggleTheme()" style="
+                        position: relative; 
+                        width: 40px; 
+                        height: 20px; 
+                        background: #2a2a2a; /* Spento di default (Dark Mode) */
+                        border-radius: 10px; 
+                        cursor: pointer; 
+                        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.1);
+                        border: 1px solid var(--border-main);
+                        transition: background 0.25s ease;
+                    ">
+                        <div id="btn-theme-knob" style="
+                            position: absolute; 
+                            top: 1px; 
+                            left: 2px; 
+                            width: 16px; 
+                            height: 16px; 
+                            border-radius: 50%; 
+                            background: linear-gradient(135deg, #4ba3c7, #216b8c);
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+                            transition: left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                        "></div>
+                    </div>
                 </div>
             </div>
+
         </aside>
 
-        <div id="mixer-panel" class="floating-youtube-panel"> 
-            <span class="close-panel" onclick="gestisciPannelli('mixer-panel', 'mixer-toggle')">&times;</span>
-            <h3 style="margin:0 0 15px 0; font-size:16px; border-bottom:1px solid #334155; padding-bottom:5px;">Mixer Audio</h3>
+        <!-- ================= MIXER ================= -->
+        <div id="mixer-panel" class="floating-panel"> 
+
+            <div class="div-border-bottom">
+
+                <div class="panel-header">
+                    <h4 style="color: var(--text-secondary);">Mixer Audio</h4>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; user-select: none;">
+                        <button class="btn-fx" title="Reset" onclick="resetFX('mixer')" style="padding: 2px 8px; font-size: 12px; width: auto;"><span style="color: blue; font-weight: bold;">&#8635;</span>&nbsp;Reset</button>
+                        <span class="close-panel" onclick="gestisciPannelli('mixer-panel', 'mixer-toggle')" style="position: static; font-size: 20px; cursor: pointer; margin-left: 5px;" title="Chiudi">&times;</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="panel-scroll">
                 <div class="control-group">
                     <label>Volume Generale <span id="vol-val" class="val-display">0 dB</span></label>
@@ -199,12 +246,24 @@
                     </div>
                 </div>
             </div>
-            <button class="btn-fx" style="width:100%; margin-top:10px;" onclick="resetFX('mixer')">Reset Tutti</button>
         </div>
 
-        <div id="pitch-panel" class="floating-youtube-panel"> 
-            <span class="close-panel" onclick="gestisciPannelli('pitch-panel', 'pitch-toggle')">&times;</span>
-            <h3 style="margin:0 0 15px 0; font-size:16px; border-bottom:1px solid #334155; padding-bottom:5px;">Effetti Voce/Base</h3>
+        <!-- ================= EFFETTI ================= -->
+        <div id="pitch-panel" class="floating-panel"> 
+            
+            <div class="div-border-bottom">
+
+                <div class="panel-header">
+                    <h4 style="color: var(--text-secondary);">Effetti Voce/Base</h4>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; user-select: none;">
+                        <button class="btn-fx" title="Reset" onclick="resetFX('pitch')" style="padding: 2px 8px; font-size: 12px; width: auto;"><span style="color: blue; font-weight: bold;">&#8635;</span>&nbsp;Reset</button>
+                        <span class="close-panel" onclick="gestisciPannelli('pitch-panel', 'pitch-toggle')" style="position: static; font-size: 20px; cursor: pointer; margin-left: 5px;" title="Chiudi">&times;</span>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="panel-scroll">
                 <div class="control-group"><label>Pitch (Semitoni) <span id="pitch-val" class="val-display">0</span></label><input type="range" id="pitchSlider" min="-12" max="12" value="0" step="1" oninput="updateFX('pitch', this.value)"></div>
                 <div class="control-group"><label>Velocita' <span id="speed-val" class="val-display">1x</span></label><input type="range" id="speedSlider" min="0.5" max="1.5" value="1" step="0.05" oninput="updateFX('speed', this.value)"></div>
@@ -219,29 +278,47 @@
                 <div class="control-group"><label>Phaser <span id="phaser-val" class="val-display">0</span></label><input type="range" id="phaserSlider" min="0" max="10" value="0" step="0.5" oninput="updateFX('phaser', this.value)"></div>
                 <div class="control-group"><label>Tremolo <span id="tremolo-val" class="val-display">0</span></label><input type="range" id="tremoloSlider" min="0" max="1" value="0" step="0.05" oninput="updateFX('tremolo', this.value)"></div>
             </div>
-            <button class="btn-fx" style="width:100%; margin-top:10px;" onclick="resetFX('pitch')">Reset Tutti</button>
         </div>
 
-        <div id="singer-panel" class="floating-youtube-panel"> 
-            <span class="close-panel" onclick="gestisciPannelli('singer-panel', 'singer-toggle')">&times;</span>
-            <h3 style="margin:0 0 15px 0; font-size:16px; border-bottom:1px solid #334155; padding-bottom:5px;">Lista Persone</h3>
-            <div class="panel-scroll"><ul id="singerList"></ul></div>
-            <div class="control-group" style="margin-top:10px;">
-                <label style="margin-bottom:6px; display:block;">Nuovo</label>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" id="newSingerName" placeholder="Inserisci nome e premi +..." style="flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); font-size:13px;">
-                    <button class="btn-fx" title="Aggiungi persona" onclick="addSinger()" style="width: auto; padding: 0 15px; font-weight:bold;">+</button>
+        <!-- ================= PERSONE ================= -->
+        <div id="singer-panel" class="floating-panel"> 
+            
+            <div class="div-border-bottom">
+
+                <div class="panel-header">
+                    <h4 style="color: var(--text-secondary); margin: 0;">Lista Persone</h4>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; user-select: none;">
+                        <button class="btn-fx" title="Aggiungi persona" onclick="addSinger(prompt('Inserisci il nome della persona da aggiungere:'));" style="padding: 2px 10px; font-weight: bold; font-size: 12px; width: auto;"><span style="color: #4695df;">+</span>&nbsp;Crea</button>
+                        <button class="btn-fx" title="Elimina selezionati" onclick="deleteSelected()" style="padding: 2px 8px; font-size: 12px; width: auto;"><span style="color: #ef4444; font-weight: bold;">✕</span>&nbsp;Canc</button>
+                        <button class="btn-fx" title="Seleziona/Deseleziona tutti" onclick="selectAll()" style="padding: 2px 8px; font-size: 12px; width: auto;"><span style="color: #4ade80;">✓</span>&nbsp;Tutti</button>
+                        <span class="close-panel" onclick="gestisciPannelli('singer-panel', 'singer-toggle')" style="position: static; font-size: 20px; cursor: pointer; margin-left: 5px;" title="Chiudi">&times;</span>
+                    </div>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px;">
-                <button class="btn-fx" title="Seleziona/Deseleziona tutti" onclick="selectAll()"><span style="color: #4ade80; opacity: 0.9;">✓</span>&nbsp;Tutti</button>
-                <button class="btn-fx" onclick="deleteSelected()"><span style="color: #ef4444; opacity: 0.9; font-weight: bold;">✕</span>&nbsp;Elimina</button>
+
+            <div class="panel-scroll" style="flex-grow: 1;">
+                <ul id="singerList" style="margin: 0; padding: 0; list-style: none;"></ul>
             </div>
+            
         </div>
 
-        <div id="studio-panel" class="floating-youtube-panel"> 
-            <span class="close-panel" onclick="gestisciPannelli('studio-panel', 'studio-toggle')">&times;</span>
-            <h3 style="margin:0 0 15px 0; font-size:16px; border-bottom:1px solid #334155; padding-bottom:5px; color:#a78bfa;">🎛️ Cyber Groove Studio</h3>
+        <!-- ================= STUDIO ================= -->
+        <div id="studio-panel" class="floating-panel"> 
+
+            <div class="div-border-bottom">
+
+                <div class="panel-header">
+                    <h4 style="color: var(--text-secondary);">Cyber Groove Studio</h4>
+
+                    <div style="display: flex; align-items: center; gap: 8px; user-select: none;">
+                        <button id="studioMainBtn" class="btn-fx" title="Avvia o Ferma Studio" onclick="toggleStudioGenerativo()" style="padding: 2px 8px; font-size: 12px; width: auto;"><span style="color: blue; font-weight: bold;">▶</span>&nbsp;Play</button>
+                        <span class="close-panel" onclick="gestisciPannelli('studio-panel', 'studio-toggle')" style="position: static; font-size: 20px; cursor: pointer; margin-left: 5px;" title="Chiudi">&times;</span>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="panel-scroll">                
                 <div class="control-group" style="margin-bottom:15px;">
                     <label style="font-size:12px; display:block; margin-bottom:5px;">Stile del Ritmo:</label>
@@ -266,15 +343,14 @@
                     <button id="st-pad" class="btn-fx active" onclick="toggleStudioCanale('pad')">🌌 Pad</button>
                     <button id="st-arp" class="btn-fx active" onclick="toggleStudioCanale('arp')">👾 Arp</button>
                 </div>
-            </div>
-            <div class="control-group" style="margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                    <span>Velocità (Tempo)</span>
-                    <span id="studioBpmVal" style="color:#a78bfa; font-weight:bold;">90 BPM</span>
+                <div class="control-group" style="margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                        <span>Velocità (Tempo)</span>
+                        <span id="studioBpmVal" style="color:#a78bfa; font-weight:bold;">90 BPM</span>
+                    </div>
+                    <input type="range" id="studioBpmSlider" min="60" max="150" value="90" oninput="cambiaStudioBPM(this.value)" style="width:100%;">
                 </div>
-                <input type="range" id="studioBpmSlider" min="60" max="150" value="90" oninput="cambiaStudioBPM(this.value)" style="width:100%;">
             </div>
-            <button id="studioMainBtn" class="btn-fx" style="width:100%; padding: 8px 10px; font-weight:bold;" onclick="toggleStudioGenerativo()">▶ Avvia Studio</button>
         </div>
 
         <main id="content-area">
@@ -346,7 +422,7 @@
             </div>
 
             <section id="video-grid-section">
-                <h3 style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 600; color: #f8fafc;">
+                <h3 style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 600; color: var(--text-secondary)">
                     <span>Tracce Disponibili</span> 
                     <span id="stat">0 / 0</span>
                 </h3>
@@ -364,6 +440,8 @@
         
         <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Un attimo di pazienza.</p>
     </dialog>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <script src="js/tone.js"></script>
     <script src="js/core/audio-engine.js"></script>
