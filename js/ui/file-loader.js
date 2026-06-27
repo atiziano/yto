@@ -321,6 +321,139 @@ window.downloadFileDiretto = function (url, destinazione, callback) {
     getRequest(url);
 }
 
+// Funzione da legare alla creazione della tua lista video (es. nel ciclo di render)
+function agganciaMenuContestuale(elementoLi, percorsoVideo) {
+    
+    elementoLi.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 🎯 RECUPERO CHIRURGICO: Cerchiamo gli elementi solo ORA che è avvenuto il click
+        const menu = document.getElementById('custom-context-menu');
+        const btnRename = document.getElementById('context-rename');
+        const btnDelete = document.getElementById('context-delete');
+
+        // Se l'elemento non esiste ancora nell'HTML, mandiamo un alert chiaro per fare debug
+        if (!menu || !btnRename || !btnDelete) {
+            console.error("Menu contestuale non trovato nell'HTML! Controlla gli ID.");
+            alert("Errore interno: Il menu contestuale HTML non è presente nella pagina.");
+            return; 
+        }
+
+        // Se esiste, lo posizioniamo e lo mostriamo
+        menu.style.top = e.pageY + 'px';
+        menu.style.left = e.pageX + 'px';
+        menu.style.display = 'block';
+
+        // Assegniamo le funzioni ai click sui bottoni del menu
+        btnRename.onclick = function() {
+            menu.style.display = 'none';
+            rinominaVideoPrompt(percorsoVideo, elementoLi);
+        };
+
+        btnDelete.onclick = function() {
+            menu.style.display = 'none';
+            eliminaVideoConfirm(percorsoVideo, elementoLi);
+        };
+    });
+}
+
+// Rinomina file
+function rinominaVideoPrompt(percorsoVideo, elementoLi) {
+
+    if (percorsoVideo.startsWith('file:')) {
+        percorsoVideo = percorsoVideo.replace(/^file:\/{0,3}/, '').replace(/\\/g, '/');
+        percorsoVideo = decodeURIComponent(percorsoVideo);
+        percorsoVideo = path.normalize(percorsoVideo);
+    }
+
+    const directory = path.dirname(percorsoVideo);
+    const nomeCompleto = path.basename(percorsoVideo);
+    const estensioneVideo = path.extname(percorsoVideo);
+    const vecchioNomeSenzaEst = nomeCompleto.substring(0, nomeCompleto.lastIndexOf('.'));
+
+    let nuovoNomeSenzaEst = prompt(`Inserire il nuovo nome del file contenuto nella cartella \n"${directory}"`, vecchioNomeSenzaEst);
+    if (!nuovoNomeSenzaEst || nuovoNomeSenzaEst.trim() === "") return;
+    nuovoNomeSenzaEst = nuovoNomeSenzaEst.trim();
+
+    try {
+        const fileNellaCartella = fs.readdirSync(directory);
+        const fileAssociati = fileNellaCartella.filter(file => file.startsWith(vecchioNomeSenzaEst + "."));
+
+        fileAssociati.forEach(fileVecchio => {
+            const estensioneCorrente = path.extname(fileVecchio);
+            const percorsoVecchioFile = path.join(directory, fileVecchio);
+            const percorsoNuovoFile = path.join(directory, nuovoNomeSenzaEst + estensioneCorrente);
+            
+            if (fs.existsSync(percorsoVecchioFile)) {
+                fs.renameSync(percorsoVecchioFile, percorsoNuovoFile);
+            }
+        });
+
+        // Cambiamo il testo visibile dell'elemento senza toccare gli altri
+        if (elementoLi) {
+            const vecchioHTML = elementoLi.innerHTML;
+            const nuovoHTML = vecchioHTML.replaceAll(vecchioNomeSenzaEst, nuovoNomeSenzaEst);
+            elementoLi.innerHTML = nuovoHTML;
+
+            // Generiamo il NUOVO percorso del video aggiornato
+            const nuovoPercorsoVideo = path.join(directory, nuovoNomeSenzaEst + estensioneVideo);
+
+            // Aggiorna click
+            elementoLi.onclick = function() {
+                play(nuovoPercorsoVideo, elementoLi); 
+                switchPlayer('locale');
+            };
+            
+            // AGGIORNA IL CLICK DESTRO (MENU CONTESTUALE)
+            agganciaMenuContestuale(elementoLi, nuovoPercorsoVideo);
+
+        }
+        
+    } catch (error) {
+        console.error(error);
+        alert("Impossibile rinominare i file. Verifica che non siano in uso.");
+    }
+}
+
+// Cancella file
+function eliminaVideoConfirm(percorsoVideo, elementoLi) {
+
+    if (percorsoVideo.startsWith('file:')) {
+        percorsoVideo = percorsoVideo.replace(/^file:\/{0,3}/, '').replace(/\\/g, '/');
+        percorsoVideo = decodeURIComponent(percorsoVideo);
+        percorsoVideo = path.normalize(percorsoVideo);
+    }
+
+    const directory = path.dirname(percorsoVideo);
+    const nomeCompleto = path.basename(percorsoVideo);
+    const vecchioNomeSenzaEst = nomeCompleto.substring(0, nomeCompleto.lastIndexOf('.'));
+
+    if (confirm(`Sei sicuro di voler eliminare definitivamente dalla cartella \n"${directory}" il file:\n"${vecchioNomeSenzaEst}"?`)) {
+        try {
+            const fileNellaCartella = fs.readdirSync(directory);
+            const fileAssociati = fileNellaCartella.filter(file => file.startsWith(vecchioNomeSenzaEst + "."));
+
+            fileAssociati.forEach(fileDaEliminare => {
+                const percorsoFileCompleto = path.join(directory, fileDaEliminare);
+                if (fs.existsSync(percorsoFileCompleto)) {
+                    fs.unlinkSync(percorsoFileCompleto);
+                }
+            });
+
+            // 🎯 RIMOZIONE CHIRURGICA DAL DOM:
+            // Sparisce solo la riga della canzone eliminata, lasciando intatte tutte le altre cartelle
+            if (elementoLi) {
+                elementoLi.remove(); 
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Errore nell'eliminazione del file.");
+        }
+    }
+}
+
 /**
  * Funzione di utilità per evitare che caratteri speciali nella ricerca (es. ?, +, -) rompano la Regex
  */
@@ -336,4 +469,23 @@ function updateStat() {
     const visible = document.querySelectorAll("#myUL li:not([style*='display: none'])").length;
     const statEl = document.getElementById("stat");
     if (statEl) statEl.innerHTML = visible + " / " + total;
+}
+
+// 🎯 QUESTO GESTISCE IL CLICK A VUOTO FUORI DAL MENU
+document.addEventListener('mousedown', function(e) {
+    const menu = document.getElementById('custom-context-menu');
+    if (menu && menu.style.display === 'block') {
+        // Se il click NON è avvenuto dentro il menu, lo nascondiamo
+        if (!menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    }
+});
+
+// Fix per quando si clicca completamente fuori dalla finestra di NW.js
+if (typeof nw !== 'undefined') {
+    nw.Window.get().on('blur', function() {
+        const menu = document.getElementById('custom-context-menu');
+        if (menu) menu.style.display = 'none';
+    });
 }

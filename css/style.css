@@ -160,6 +160,11 @@ body {
     margin-left: 2px;
 }
 
+.context-item:hover {
+    background-color: var(--bg-base) !important;
+    color: var(--text-dropdown-hover) !important;
+}
+
 /* BOX DI RICERCA CENTRALIZZATO (STILE YT ORIGINALE) */
 .top-center {
     position: sticky;

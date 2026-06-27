@@ -225,6 +225,8 @@ function mostraInGriglia(arrayBasi) {
         };
         
         container.appendChild(li);
+
+        agganciaMenuContestuale(li, base.pathCompleto);
     });
 }
 
